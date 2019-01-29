@@ -7,7 +7,7 @@
     "build": "cross-env NODE_ENV=production webpack --mode production",
     "start": "webpack-dev-server --mode development --open --progress"
   },
-  "private": true,
+  "private": false,
   "dependencies": {
     "axios": "^0.18.0",
     "babel-plugin-lodash": "^3.3.4",
