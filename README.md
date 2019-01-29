@@ -1,0 +1,1 @@
+forcemanager-cli
