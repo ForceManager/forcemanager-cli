@@ -1,0 +1,8 @@
+node_modules
+build
+dist
+.vscode
+.env
+npm-debug.log
+dev/*/*/node_modules
+todos.txt

@@ -1,0 +1,21 @@
+{
+    "presets": ["env", "react", "stage-1"],
+    "env": {
+        "production": {
+            "plugins": [
+                "lodash",
+                "transform-decorators-legacy",
+                "transform-dev-warning",
+                "transform-react-inline-elements",
+                "transform-react-constant-elements",
+                "transform-react-remove-prop-types"
+            ]
+        },
+        "development": {
+            "plugins": [
+                "transform-decorators-legacy",
+                "react-hot-loader/babel"
+            ]
+        }
+    }
+}
