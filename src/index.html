@@ -9,7 +9,7 @@
 </head>
 <body>
     <div class="header">
-        <h1 class="title">ForceManager {{widgetType}} Widget Dev</h1>
+        <h1 class="title">ForceManager Fragment Development - {{widgetType}} {{type}}</h1>
         <div class="config-icon" onClick="toggleConfig()">
             <img src="https://fmassets.s3.amazonaws.com/sfmCustomWidgets/pro/1.0.0m/trafficLight/img/cog_icon.png">
         </div>
@@ -31,19 +31,22 @@
             <button type="button" id="save" name="save" onClick="onSave()">Save</button>
         </div>
     </div>
-    <div class="widget widget-col-{{columns}}">
+    <div id="widget" class="widget widget-col-{{columns}}">
         <div class="widget-header">
             <div class="widget-title" class="title">{{title}}</div>
         </div>
         <div class="widget-content" id="widget-content"></div>
     </div>
+    <div id="form" class="form">
+    </div>
     <script type="text/javascript" src="http://localhost:5500/lib/fm-bridge-backend.js"></script>
     <script type="text/javascript">
         window.onload = function () {
             let context = {
-                type: 'widget',
+                type: '{{type}}',
                 widgetType: '{{widgetType}}',
                 entity: '{{entity}}',
+                deviceOS: 'web',
             };
             context['loginToken'] = sessionStorage.getItem('fmDevToken') ? sessionStorage.getItem('fmDevToken') : '';
             context['companyId'] = sessionStorage.getItem('fmDevCompanyId') ? sessionStorage.getItem('fmDevCompanyId') : '';
@@ -51,6 +54,17 @@
             document.getElementById('token').value = context.loginToken;
             document.getElementById('companyId').value = context.companyId;
             document.getElementById('urlBase').value = context.urlBase;
+            switch (context.type) {
+                case 'widget':
+                    document.getElementById('widget').style.display = 'block';
+                    break;
+                case 'form':
+                    document.getElementById('form').style.display = 'block';
+                    break;
+                case 'page':
+                    document.getElementById('page').style.display = 'block';
+                    break;
+            }
             if (context.loginToken && context.companyId && context.urlBase) {
                 window.FmBridgeBackend.init(context);
                 window.FmBridgeBackend.setContext(context);
@@ -173,6 +187,7 @@
         background-color: white;
         margin: 20px;
         box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15);
+        display: none;
     }
     .widget-col-1{
         width: 33%;
@@ -203,6 +218,11 @@
         height: 260px;
         overflow-y: auto;
         background-color: white;
+    }
+    .form {
+        width: 100%;
+        height: 100%;
+        display: none;
     }
     .fragment{
         width: 100%;

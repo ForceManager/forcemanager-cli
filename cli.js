@@ -244,7 +244,9 @@ else if (args[0] === 'start') {
             var port = args[1] ? args[1] : 3000;
             var data = {
                 port,
+                type: fmConfig.type,
                 widgetType: fmConfig.widgetType,
+                entityId: fmConfig.widgetSubtype,
                 entity: fmConfig.widgetSubtype == 2 ? 'Company' : 'Oportunity',
                 id: fmConfig.id,
                 title: fmConfig.title,
