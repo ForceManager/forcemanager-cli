@@ -37,7 +37,7 @@
     </div>
     <div id="widget" class="widget widget-col-{{columns}}">
         <div class="widget-header">
-            <div class="widget-title"></div>{{title}}</div>
+            <div class="widget-title">{{title}}</div>
         </div>
         <div class="widget-content" id="widget-content"></div>
     </div>
@@ -45,10 +45,10 @@
         <div class="form-header">
             <div id="form-title" class="form-title">Creación formulario</div>
         </div>
-        <div class="form-camera-images">
+        <div id="form-camera-images" class="form-camera-images">
             <div class="form-camera-images-header">
                 <div class="form-camera-images-header-title">IMÁGENES</div>
-                <div class="form-camera-images-header-collapse"></div>
+                <div class="form-camera-images-header-collapse" onClick="toggleImages()"><</div>
             </div>
             <div class="form-camera">
                 <div class="form-camera-icon"></div>
@@ -57,9 +57,9 @@
         </div>
         <div class="form-content" id="form-content"></div>
     </div>
-    <div id="loader" class="loader-container">
-        <div class="shadow"></div>
-        <div class="loader"></div>
+    <div id="page" class="page"></div>
+    <div id="loader" class="loader">
+        <div class="loader-icon"></div>
     </div>
     <script type="text/javascript" src="http://localhost:5500/lib/fm-bridge-backend.js"></script>
     <script type="text/javascript">
@@ -71,11 +71,13 @@
                 deviceOS: 'web',
             };
             let domEl;
+            let panel = document.getElementById('config-panel');
+            context['dev'] = true;
             context['loginToken'] = sessionStorage.getItem('fmDevToken') ? sessionStorage.getItem('fmDevToken') : '';
             context['companyId'] = sessionStorage.getItem('fmDevCompanyId') ? sessionStorage.getItem('fmDevCompanyId') : '';
             context['urlBase'] = sessionStorage.getItem('fmDevUrlBase') ? sessionStorage.getItem('fmDevUrlBase') : 'https://api.forcemanager.net/api/v4';
             let userId = sessionStorage.getItem('userId') ? sessionStorage.getItem('userId') : '';
-            let userName = localStorage.getItem('name') ? sessionStorage.getItem('name') : '';
+            let userName = localStorage.getItem('name') ? localStorage.getItem('name') : '';
             context['user'] = { 'id': userId, 'name': userName };
             document.getElementById('token').value = context.loginToken;
             document.getElementById('companyId').value = context.companyId;
@@ -83,11 +85,12 @@
             document.getElementById('urlBase').value = context.urlBase;
             switch (context.type) {
                 case 'widget':
-                    document.getElementById('widget').style.display = 'block';
                     domEl = 'widget-content';
                     break;
                 case 'form':
                     document.getElementById('form').style.display = 'block';
+                    document.getElementById('widget').outerHTML = '';
+                    document.getElementById('page').outerHTML = '';
                     domEl = 'form-content';
                     context['form'] = {
                         'entityForm': null,
@@ -98,7 +101,6 @@
                     };
                     break;
                 case 'page':
-                    document.getElementById('page').style.display = 'block';
                     domEl = 'page';
                     break;
             }
@@ -108,7 +110,6 @@
                 window.FmBridgeBackend.loadFragment({{id}}, 'http://localhost:{{port}}', domEl);
             } else {
                 console.log('No Context set')
-                var panel = document.getElementById('config-panel');
                 panel.classList.toggle("show");
             }
         };
@@ -119,9 +120,8 @@
             sessionStorage.setItem('fmDevUrlBase', document.getElementById('urlBase').value);
             location.reload();
         }
-        function toggleConfig () {
-            var panel = document.getElementById('config-panel');
-            panel.classList.toggle("show");
+        function toggleConfig() {
+            panel.classList.toggle('show');
         }
     </script>
 </body>
@@ -138,7 +138,7 @@
     }
     .header {
         width: 100%;
-        height: 60px;
+        height: 40px;
         background-color: #f8f8f8;
         border-bottom: 1px solid #eaeaea;
         padding: 10px 0;
@@ -152,19 +152,21 @@
         padding: 0;
         text-align: center;
         text-transform: capitalize;
+        font-size: 20px;
+        line-height: 20px;
     }
     .config-icon{
         position: absolute;
-        top: 20px;
+        top: 10px;
         right: 20px;
         cursor: pointer;
     }
     .config-panel{
         position: absolute;
-        top: 69px;
+        top: 40px;
         right: -340px;
         width: 330px;
-        min-height: calc(100vh - 69px);
+        min-height: calc(100vh - 40px);
         box-sizing: border-box;
         background-color: #f8f8f8;
         padding: 30px;
@@ -253,6 +255,7 @@
         font-family: Roboto;
         color: #212121;
         font-weight: 400;
+        font-size: 20px;
         text-transform: none;
     }
     .widget-content {
@@ -262,9 +265,55 @@
     }
     .form {
         width: 100%;
-        height: calc(100vh - 70px);
-        overflow: hidden;
+        height: calc(100vh - 40px);
+        overflow: scroll;
         display: none;
+    }
+    .form-header {
+        height: 40px;
+        background-color: #565656;
+        font-size: 13px;
+        letter-spacing: 0.5px;
+        padding: 10px 20px;
+        box-sizing: border-box;
+    }
+    .form-title {
+        font-family: Roboto;
+        color: #fff;
+        font-weight: 400;
+        font-size: 16px;
+        text-transform: none;
+    }
+    .form-camera-images {
+        height: 80px;
+        background-color: #f8f8f8;
+        display: none;
+    }
+    .form-camera-images.show {
+        display: flex;
+    }
+    .form-camera-images.collapse {
+        height: 40px;
+    }
+    .form-camera-images-header {
+        padding: 10px 20px;
+        display: flex;
+        justify-content: space-between;
+    }
+    .form-camera-images-header-title {
+        color: #555;
+    }
+    .form-camera-images-header-collapse {
+        cursor: pointer;
+    }
+    .form-camera {
+
+    }
+    .form-camera-icon {
+
+    }
+    .form-images {
+
     }
     .form-content {
         height: 100%;
@@ -273,6 +322,23 @@
         width: 100%;
         height: 100%;
         border: none;
+    }
+    .loader {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        background-color: #21212170;
+        justify-content: center;
+        align-items: center;
+        display: none;
+    }
+    .loader.show {
+        display: flex;
+    }
+    .loader-icon{
+        height: 60px;
+        width: 60px;
+        background-color: #fff;
     }
 </style>
 </html>
