@@ -61,6 +61,23 @@
     <div id="loader" class="loader">
         <div class="loader-icon"></div>
     </div>
+    <div id="confirm-dialog" class="confirm-dialog">
+        <div class="confirm-dialog-box">
+            <div id="confirm-dialog-msg" class="confirm-dialog-msg"></div>
+            <div class="confirm-dialog-buttons">
+                <div id="confirm-dialog-button-ko" class="confirm-dialog-button"  onClick="confirmDialog('KO')"></div>
+                <div id="confirm-dialog-button-ok" class="confirm-dialog-button"  onClick="confirmDialog('OK')"></div>
+            </div>
+        </div>
+    </div>
+    <div id="alert-dialog" class="alert-dialog">
+        <div class="alert-dialog-box">
+            <div id="alert-dialog-msg" class="alert-dialog-msg"></div>
+            <div class="alert-dialog-buttons">
+                <div id="alert-dialog-button" class="alert-dialog-button"  onClick="alertDialog()"></div>
+            </div>
+        </div>
+    </div>
     <script type="text/javascript" src="http://localhost:5500/lib/fm-bridge-backend.js"></script>
     <script type="text/javascript">
         window.onload = function () {
@@ -71,7 +88,6 @@
                 deviceOS: 'web',
             };
             let domEl;
-            let panel = document.getElementById('config-panel');
             context['dev'] = true;
             context['loginToken'] = sessionStorage.getItem('fmDevToken') ? sessionStorage.getItem('fmDevToken') : '';
             context['companyId'] = sessionStorage.getItem('fmDevCompanyId') ? sessionStorage.getItem('fmDevCompanyId') : '';
@@ -110,6 +126,7 @@
                 window.FmBridgeBackend.loadFragment({{id}}, 'http://localhost:{{port}}', domEl);
             } else {
                 console.log('No Context set')
+                let panel = document.getElementById('config-panel');
                 panel.classList.toggle("show");
             }
         };
@@ -119,10 +136,74 @@
             sessionStorage.setItem('fmDevToken', document.getElementById('token').value);
             sessionStorage.setItem('fmDevUrlBase', document.getElementById('urlBase').value);
             location.reload();
-        }
+        };
+
         function toggleConfig() {
+            let panel = document.getElementById('config-panel');
             panel.classList.toggle('show');
-        }
+        };
+
+        var dialogId = '';
+
+        window.fmDevFunctions = {
+            setTitle(title) {
+                document.getElementById('form-title').innerHTML = title;
+            },
+
+            collapseImagesView() {
+                document.getElementById('form-camera-images').classList.add('collapse');
+            },
+
+            expandImagesView() {
+                document.getElementById('form-camera-images').classList.remove('collapse');
+            },
+
+            showCameraImages() {
+                document.getElementById('form-camera-images').classList.add('show');
+            },
+
+            hideCameraImages() {
+                document.getElementById('form-camera-images').classList.remove('show');
+            },
+
+            showLoading() {
+                document.getElementById('loader').classList.add('show');
+            },
+
+            hideLoading() {
+                document.getElementById('loader').classList.remove('show');
+            },
+
+            showConfirmDialog(id, message, btnOkStr, btnKOStr) {
+                document.getElementById('confirm-dialog-msg').innerHTML = message;
+                document.getElementById('confirm-dialog-button-ko').innerHTML = btnKOStr;
+                document.getElementById('confirm-dialog-button-ok').innerHTML = btnOkStr;
+                document.getElementById('confirm-dialog').classList.add('show');
+                dialogId = id;
+            },
+
+            hideConfirmDialog() {
+                document.getElementById('confirm-dialog').classList.remove('show');
+            },
+
+            showAlertDialog(id, message, btnOk) {
+                document.getElementById('alert-dialog-msg').innerHTML = message;
+                document.getElementById('alert-dialog-button').innerHTML = btnOk;
+                document.getElementById('alert-dialog').classList.add('show');
+                dialogId = id;
+            },
+
+            hideAlertDialog() {
+                document.getElementById('alert-dialog').classList.remove('show');
+            },
+        };
+        
+        function confirmDialog(res) {
+            var event = new CustomEvent('showConfirmDialogResponse', {
+                detail: { callbackId: dialogId, response: res }
+            });
+            window.dispatchEvent(event);
+        };
     </script>
 </body>
 <style>
@@ -339,6 +420,83 @@
         height: 60px;
         width: 60px;
         background-color: #fff;
+    }
+    .confirm-dialog {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        background-color: #21212170;
+        justify-content: center;
+        align-items: center;
+        display: none;
+    }
+    .confirm-dialog.show {
+        display: flex;
+    }
+    .confirm-dialog-box {
+        width: 500px;
+        padding: 30px 20px;
+        background-color: #fff;
+        box-shadow: 3px 3px 2px #656565b5;
+    }
+    .confirm-dialog-msg {
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    .confirm-dialog-buttons {
+        display: flex;
+        justify-content: center;
+    }
+    .confirm-dialog-button {
+        width: 100px;
+        padding: 10px 0;
+        background-color: #D67D03;
+        margin: 0 10px;
+        color: white;
+        line-height: 20px;
+        transform: uppercase;
+        border-radius: 20px;
+        text-align: center;
+        cursor: pointer;
+    }
+    
+    .alert-dialog {
+        position: absolute;
+        height: 100%;
+        width: 100%;
+        background-color: #21212170;
+        justify-content: center;
+        align-items: center;
+        display: none;
+    }
+    .alert-dialog.show {
+        display: flex;
+    }
+    .alert-dialog-box {
+        width: 500px;
+        padding: 30px 20px;
+        background-color: #fff;
+        box-shadow: 3px 3px 2px #656565b5;
+    }
+    .alert-dialog-msg {
+        margin-bottom: 30px;
+        text-align: center;
+    }
+    .alert-dialog-buttons {
+        display: flex;
+        justify-content: center;
+    }
+    .alert-dialog-button {
+        width: 100px;
+        padding: 10px 0;
+        background-color: #D67D03;
+        margin: 0 10px;
+        color: white;
+        line-height: 20px;
+        transform: uppercase;
+        border-radius: 20px;
+        text-align: center;
+        cursor: pointer;
     }
 </style>
 </html>
