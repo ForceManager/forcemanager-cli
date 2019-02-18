@@ -1,6 +1,6 @@
 {
   "name": "forcemanager-cli",
-  "version": "0.0.1-alpha.0",
+  "version": "0.0.1-alpha.2",
   "license": "MIT",
   "author": "SPT <sergi.palau@forcemanager.net>",
   "scripts": {
