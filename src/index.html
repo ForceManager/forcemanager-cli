@@ -17,7 +17,7 @@
     <div class="config-panel" id="config-panel">
         <div class="config-panel-item">
             <label>{{entity}} ID</label>
-            <input type="text" id="companyId" name="companyId">
+            <input type="text" id="entityId" name="entityId">
         </div>
         <div class="config-panel-item">
             <label>User ID</label>
@@ -112,13 +112,13 @@
             let domEl;
             context['dev'] = true;
             context['loginToken'] = sessionStorage.getItem('fmDevToken') ? sessionStorage.getItem('fmDevToken') : '';
-            context['companyId'] = sessionStorage.getItem('fmDevCompanyId') ? sessionStorage.getItem('fmDevCompanyId') : '';
+            context['entityId'] = sessionStorage.getItem('fmDevEntityId') ? sessionStorage.getItem('fmDevEntityId') : '';
             context['urlBase'] = sessionStorage.getItem('fmDevUrlBase') ? sessionStorage.getItem('fmDevUrlBase') : 'https://api.forcemanager.net/api/v4';
             let userId = sessionStorage.getItem('userId') ? sessionStorage.getItem('userId') : '';
             let userName = localStorage.getItem('name') ? localStorage.getItem('name') : '';
             context['user'] = { 'id': userId, 'name': userName };
             document.getElementById('token').value = context.loginToken;
-            document.getElementById('companyId').value = context.companyId;
+            document.getElementById('entityId').value = context.entityId;
             document.getElementById('userId').value = context.userId;
             document.getElementById('urlBase').value = context.urlBase;
             window.scrollTo(0, 0);
@@ -149,7 +149,7 @@
                     domEl = 'page-content';
                     break;
             }
-            if (context.loginToken && context.companyId && context.urlBase) {
+            if (context.loginToken && context.entityId && context.urlBase) {
                 window.FmBridgeBackend.init(context);
                 // window.FmBridgeBackend.setContext(context);
                 window.FmBridgeBackend.loadFragment({{id}}, 'http://localhost:{{port}}', domEl);
@@ -160,7 +160,7 @@
             }
         };
         function onSave() {
-            sessionStorage.setItem('fmDevCompanyId', document.getElementById('companyId').value);
+            sessionStorage.setItem('fmDevEntityId', document.getElementById('entityId').value);
             sessionStorage.setItem('userId', document.getElementById('userId').value);
             sessionStorage.setItem('fmDevToken', document.getElementById('token').value);
             sessionStorage.setItem('fmDevUrlBase', document.getElementById('urlBase').value);
