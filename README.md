@@ -17,7 +17,7 @@ Fragments are isolated parts of code enbeded in ForceManager divided in 3 types:
 npm install -g forcemanager-cli
 
 // with yarn
-yarn install -g forcemanager-cli
+yarn add -g forcemanager-cli
 ```
 
 ## ⚙️ Usage
