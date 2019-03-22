@@ -15,48 +15,68 @@
         </div>
     </div>
     <div class="config-panel" id="config-panel">
-        <div class="config-panel-item">
-            <label>Title</label>
-            <input type="text" id="title" name="title">
+        <div class="config-panel-tabs">
+            <div class="config-panel-tab selected" id="options-tab" onClick="selctTab(event)">Options</div>
+            <div class="config-panel-tab" id="login-tab" onClick="selctTab(event)">Login</div>
         </div>
-        <div class="config-panel-item">
-            <label>User ID</label>
-            <input type="text" id="userId" name="userId">
+        <div class="config-panel-tab-content selected" id="options-tab-content">
+            <div class="config-panel-item">
+                <label>Title</label>
+                <input type="text" id="input-title" name="title">
+            </div>
+            <div class="config-panel-item">
+                <label>User</label>
+                <textarea type="text" id="user-data" name="user-data"></textarea>
+            </div>
+            <div class="config-panel-item config-panel-item-widget config-panel-item-form">
+                <label class="label-title" id="label-entity">Entity</label>
+                <form class="radio-buttons">
+                    <div class="form-item"><input type="radio" id="entity-2" name="entity" value="2"><label>Company</label></div>
+                    <div class="form-item"><input type="radio" id="entity-1" name="entity" value="1"><label>Opportunity</label></div>
+                </form>
+            </div>
+            <div class="config-panel-item config-panel-item-widget config-panel-item-form">
+                <label>Entity ID</label>
+                <input type="text" id="entity-id" name="entity-id">
+            </div>
+            <div class="config-panel-item  config-panel-item-widget">
+                <label class="label-title">Columns</label>
+                <form class="radio-buttons">
+                    <div class="form-item"><input type="radio" id="columns-1" name="column" value="1"><label>1 (50%)</label></div>
+                    <div class="form-item"><input type="radio" id="columns-2" name="column" value="2"><label>2 (100%)</label></div>
+                </form>
+            </div>
+            <div class="config-panel-item  config-panel-item-widget">
+                <label class="label-title">Rows</label>
+                <form class="radio-buttons">
+                    <div class="form-item"><input type="radio" id="rows-1" name="row" value="1"><label>1</label></div>
+                    <div class="form-item"><input type="radio" id="rows-2" name="row" value="2"><label>2</label></div>
+                </form>
+            </div>
+            <div class="config-panel-item">
+                <button type="button" id="save" name="save" onClick="onSave()">Save</button>
+            </div>
         </div>
-        <div class="config-panel-item">
-            <label>Enviroment</label>
-            <form>
-                <div class="form-item"><input type="radio" name="pro" value="pro"><label>Pro</label></div>
-                <div class="form-item"><input type="radio" name="pre" value="pre"><label>Pre</label></div>
-                <div class="form-item"><input type="radio" name="sta" value="sta"><label>Sta</label></div>
+        <div class="config-panel-tab-content"  id="login-tab-content">
+            <form id="login" method="post">
+                <div class="config-panel-item">
+                    <label>Public Key</label>
+                    <input type="text" id="public-key" name="public-key" autocomplete="username email">
+                </div>
+                <div class="config-panel-item">
+                    <label>Private Key</label>
+                    <input type="password" id="private-key" name="private-key" autocomplete="new-password">
+                </div>
+                <div class="config-panel-item">
+                    <input type="submit"  class="button" value="Login">
+                    <!-- <button type="button" id="login" name="save" onClick="onLogin()">Login</button> -->
+                </div>
             </form>
-        </div>
-        <div class="config-panel-item config-panel-item-widget config-panel-item-form">
-            <label>Entity</label>
-            <form>
-                <div class="form-item"><input type="radio" name="company" value="company"><label>Empany</label></div>
-                <div class="form-item"><input type="radio" name="opportunity" value="opportunity"><label>Opportunity</label></div>
-            </form>
-        </div>
-        <div class="config-panel-item config-panel-item-widget config-panel-item-form">
-            <label>Entity ID</label>
-            <input type="text" id="entityId" name="entityId">
-        </div>
-        <div class="config-panel-item  config-panel-item-widget">
-            <label>Columns</label>
-            <input type="text" id="columns" name="columns">
-        </div>
-        <div class="config-panel-item config-panel-item-widget">
-            <label>Rows</label>
-            <input type="text" id="rows" name="rows">
-        </div>
-        <div class="config-panel-item">
-            <button type="button" id="save" name="save" onClick="onSave()">Save</button>
         </div>
     </div>
-    <div id="widget" class="widget widget-col-">
+    <div id="widget" class="widget">
         <div class="widget-header">
-            <div class="widget-title">{{title}}</div>
+            <div class="widget-title" id="widget-title"></div>
         </div>
         <div class="widget-content" id="widget-content"></div>
     </div>
@@ -121,28 +141,73 @@
     <script type="text/javascript" src="http://localhost:5500/lib/fm-bridge-backend.js"></script>
     <!-- <script type="text/javascript" src="https://fmassets.s3.amazonaws.com/fragments/fm-bridge-backend.js"></script> -->
     <script type="text/javascript">
+        let domEl;
+        let name = '{{name}}';
+        let context = {
+            platform: 'dev',
+            type: '{{type}}',
+            widgetType: '{{widgetType}}',
+            loginToken: '{{devToken}}',
+        };
+        let fmDevData = sessionStorage.getItem('fmDevData') || {};
+        let devData;
+        let  userDataTemplate = {
+            'nic': 'User Test',
+            'nombre': 'User',
+            'apellidos': 'Test',
+            'email': 'usertest',
+            'movil': '000000000',
+            'idUsuario': 000,
+            'currencySymbol': '$',
+            'currencyId': 2,
+            'currencyISO': 'USD',
+            'langISOInterface': 'en',
+            'langISODDBB': 'en',
+            'locale': 'en-GB',
+            'defaultCountryId': 69,
+            'idEntorno': 17,
+            'idTimeZone': 29,
+            'longUserDateFormat': 'dd MMMM yyyy',
+            'shortUserDateFormat': 'dd/MM/yyyy',
+            'userLatitude': '45.5642676',
+            'userLongitude': '12.4276579',
+            'user': 'usertest',
+            'lengthSystem': 'metric',
+        };
+        try {
+            fmDevData = JSON.parse(fmDevData);
+            console.log('fmDevData', fmDevData);
+            devData = fmDevData[name] || {};
+        } catch (error) {
+            console.warn(error);
+            devData = {};
+        }
+        context['entity'] = devData.entity || '';
+        context['entityId'] = devData.entityId || '';
+        context['userData'] = devData.userData || userDataTemplate;
+
         window.onload = function () {
-            let domEl;
-            let context = {
-                platform: 'dev',
-                type: '{{type}}',
-                widgetType: '{{widgetType}}',
-                widgetSubtype: '{{widgetSubtype}}',
-                entity: '{{entity}}',
-            };
-            context['loginToken'] = sessionStorage.getItem('fmDevToken') ? sessionStorage.getItem('fmDevToken') : '';
-            context['entityId'] = sessionStorage.getItem('fmDevEntityId') ? sessionStorage.getItem('fmDevEntityId') : '';
-            context['env'] = sessionStorage.getItem('fmDevEnv') ? sessionStorage.getItem('fmDevEnv') : 'pro';
-            context['userData'] = sessionStorage.getItem('fmDevUserData') ? sessionStorage.getItem('fmDevUserData') : '';
-            document.getElementById('token').value = context.loginToken;
-            document.getElementById('entityId').value = context.entityId;
-            document.getElementById('env').value = context.env;
-            document.getElementById('userData').value = context.userData;
+            document.getElementById('input-title').value = devData.title || '';
+            document.getElementById('widget-title').innerHTML = devData.title || '';
+            document.getElementById('public-key').value = devData.publicKey || '';
+            document.getElementById('user-data').innerHTML = JSON.stringify(context.userData);
+            document.getElementById('entity-id').value = context.entityId;
+            if (context.entity) {
+                document.getElementById(`entity-${context.entity}`).checked = true;
+            }
+            if (devData.columns) {
+                document.getElementById(`columns-${devData.columns}`).checked = true;
+            }
+            if (devData.rows) {
+                document.getElementById(`rows-${devData.rows}`).checked = true;
+            }
+
             window.scrollTo(0, 0);
             switch (context.type) {
                 case 'widget':
+                    let widget = document.getElementById('widget');
+                    widget.classList.add('show', `widget-col-${devData.columns}`, `widget-row-${devData.rows}`);
                     document.getElementById('form').outerHTML = '';
-                    document.getElementById('widget').style.display = 'block';
                     document.getElementById('page').outerHTML = '';
                     domEl = 'widget-content';
                     break;
@@ -166,22 +231,76 @@
                     domEl = 'page-content';
                     break;
             }
-            if (context.loginToken && context.entityId && context.urlBase) {
+            if (context.entity) {
                 window.FmBridgeBackend.setContext(context);
                 window.FmBridgeBackend.init();
                 // window.FmBridgeBackend.setContext(context);
-                window.FmBridgeBackend.loadFragment(-1, 'http://localhost:{{port}}', domEl);
+                window.FmBridgeBackend.loadFragment(name, 'http://localhost:{{port}}', domEl);
             } else {
-                console.log('No Context set')
+                console.log('No entity set')
                 let panel = document.getElementById('config-panel');
+                document.getElementById('label-entity').css('color', 'red');
                 panel.classList.toggle("show");
             }
+            // Get form's DOM object
+            let login = document.getElementById('login');
+            login.addEventListener('submit', e => {
+                e.preventDefault();
+                let privateKey = document.getElementById('private-key').value;
+                let publicKey = document.getElementById('public-key').value;
+                devData.publicKey = document.getElementById('public-key').value;
+                fmDevData[name] = devData;
+                sessionStorage.setItem('fmDevData', JSON.stringify(fmDevData));
+                window.FmBridgeBackend.getDevLoginToken(name, publicKey, privateKey)
+                    .then(function() {
+                        console.log('getDevLoginToken OK');
+                        if (window.PasswordCredential) {
+                            var c = new PasswordCredential(e.target);
+                            navigator.credentials.store(c);
+                        }
+                        selctTab(null, 'options-tab');
+                        toggleConfig();
+                    })
+                    .catch(function(err) {
+                        console.warn(err);
+                    });
+            });
         };
+
+        function selctTab(event, tabId = null) {
+            let tab;
+            if (!tabId && event && event.target.className.includes('selected')) {
+                return;
+            } else if (tabId) {
+                tab = tabId;
+            } else {
+                tab = event.target.id;
+            }
+            document.querySelectorAll('.config-panel-tab.selected')[0].classList.remove('selected');
+            document.querySelectorAll('.config-panel-tab-content.selected')[0].classList.remove('selected');
+            document.getElementById(tab).classList.add('selected');
+            document.getElementById(`${tab}-content`).classList.add('selected');
+        }
+
         function onSave() {
-            sessionStorage.setItem('fmDevEntityId', document.getElementById('entityId').value);
-            sessionStorage.setItem('userId', document.getElementById('userId').value);
-            sessionStorage.setItem('fmDevToken', document.getElementById('token').value);
-            sessionStorage.setItem('fmDevUrlBase', document.getElementById('urlBase').value);
+            let entities = document.getElementsByName('entity');
+            let cols = document.getElementsByName('column');
+            let rows = document.getElementsByName('row');
+            check(entities, 'entity');
+            check(cols, 'columns');
+            check(rows, 'rows');
+            function check (elements, name) {
+                for(var i = 0; i < elements.length; i++){
+                    if (elements[i].checked) {
+                        devData[name] = elements[i].value;
+                    }
+                }
+            }
+            devData.title = document.getElementById('input-title').value;
+            devData.entityId = document.getElementById('entity-id').value;
+            devData.userData = JSON.parse(document.getElementById('user-data').innerHTML);
+            fmDevData[name] = devData;
+            sessionStorage.setItem('fmDevData', JSON.stringify(fmDevData));
             location.reload();
         };
 
@@ -293,20 +412,25 @@
         position: relative;
         display: flex;
         flex-wrap: wrap;
-        margin: 0;
-        font-family: Roboto;
         width: 100vw;
         height: 100vh;
+        margin: 0;
+        padding-top: 40px;
+        font-family: Roboto;
+        background-color: #f0f3f5;
         overflow: hidden;
     }
     .header {
+        position: absolute;
+        top: 0;
         width: 100%;
         height: 40px;
-        background-color: #f8f8f8;
+        background-color: #fff;
         border-bottom: 1px solid #eaeaea;
         padding: 10px 0;
         margin: 0;
         box-sizing: border-box;
+        color: #5f656b;
         z-index: 100;
     }
     .title{
@@ -331,29 +455,73 @@
         width: 330px;
         min-height: calc(100vh - 40px);
         box-sizing: border-box;
-        background-color: #f8f8f8;
-        padding: 30px;
         border-left: 1px solid #eaeaea;
         box-shadow: #9e9e9e99 -3px 0px 15px 0px;
         transition: .3s;
+        font-family: Roboto;
+        letter-spacing: .5px;
+        font-weight: 500;
+        font-size: 13px;
+        background-color: #fff;
+        color: #5f656b;
     }
     .config-panel.show{
         right: 0;
     }
     .config-panel-item{
-        display: flex;
+        display: inline-flex;
         flex-wrap: wrap;
+        justify-content: space-between;
+        width: 100%;
         margin-bottom: 20px;
     }
     .config-panel-item label{
         display: flex;
         margin-bottom: 5px;
     }
+    .config-panel-tabs {
+        display: inline-flex;
+        height: 40px;
+        width: 100%;
+        justify-content: space-around;
+        box-shadow: 0 2px 2px 0 rgba(0, 0, 0, 0.05);
+    }
+    .config-panel-tab {
+        height: 20px;
+        font-family: Roboto;
+        font-size: 13px;
+        font-weight: 500;
+        font-style: normal;
+        font-stretch: normal;
+        line-height: 20px;
+        letter-spacing: 0.5px;
+        color: #acb5be;
+        padding: 10px 20px;
+        cursor: pointer;
+    }
+    .config-panel-tab.selected {
+        color: #5f656b;
+        border-bottom: solid 1px #8c9fb1;
+    }
+    .config-panel-tab-content{
+        padding: 30px;
+        display: none;
+    }
+    .config-panel-tab-content.selected{
+        display: block;
+    }
     input {
         width: 100%;
         font-size: 14px;
         padding: 5px;
         box-sizing: border-box;
+        background: none;
+        border: none;
+        border-bottom: 1px solid #d1d1d1;
+    }
+    input:focus {
+        outline: none;
+        border-bottom: 1px solid #e68a50;
     }
     textarea {
         width: 100%;
@@ -362,8 +530,16 @@
         font-size: 14px;
         padding: 5px;
         box-sizing: border-box;
+        border: none;
+        border-bottom: 1px solid #d1d1d1;
     }
-    button{
+    textarea:focus {
+        outline: none;
+        border-bottom: 1px solid #e68a50;
+    }
+    button,
+    input.button{
+        width: auto;
         background-color: #FF8800;
         color: #FFF;
         display: inline-block;
@@ -387,44 +563,76 @@
         font-weight: 400;
         letter-spacing: 1px;
     }
+    button:focus {
+        outline: none;
+    }
     form {
         display: flex;
         width: 100%;
         justify-content: space-between;
     }
+    form#login {
+        display: block;
+    }
+    label {
+        display: flex;
+        margin: 0;
+    }
+    label.label-title {
+        width: 100%;
+        margin-bottom: 10px;
+    }
+    .radio-buttons {
+    }
+    .radio-buttons .form-item {
+        display: inline-flex;
+    }
+    .radio-buttons .form-item input{
+        width: 13px;
+    }
+    .radio-buttons .form-item label{
+        padding-left: 10px;
+        margin: 2px 0 0 0;
+    }
     .widget {
-        float: left;
-        height: 300px;
+        width: 435px;
+        max-width: 100%;
         background-color: white;
         margin: 20px;
-        box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.15);
+        box-shadow: 0 1px 7px 0 rgba(0,0,0,.07);
         display: none;
     }
+    .widget.show {
+        display: block;
+    }
     .widget-col-1{
-        width: 33%;
+        width: 435px;
     }
     .widget-col-2{
-        width: 50%;
+        width: 890px;
     }
-    .widget-col-3{
-        width: 100%;
+    .widget-row-1{
+        height: 300px;
+    }
+    .widget-row-2{
+        height: 620px;
     }
     .widget-header{
         position: relative;
+        display: inline-block;
         height: 40px;
-        background-color: #f8f8f8;
-        font-size: 13px;
-        letter-spacing: 0.5px;
+        width: 100%;
+        background-color: #fafbfc;
         padding: 10px 20px;
-        border-bottom: 1px solid #eaeaea;
         box-sizing: border-box;
     }
     .widget-title{
         font-family: Roboto;
-        color: #212121;
-        font-weight: 400;
-        font-size: 20px;
-        text-transform: none;
+        letter-spacing: .5px;
+        font-weight: 500;
+        font-size: 13px;
+        color: #5f656b;
+        line-height: 20px;
     }
     .widget-content {
         height: 260px;
