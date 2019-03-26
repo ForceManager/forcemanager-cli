@@ -166,61 +166,61 @@ if (args[0] == 'create') {
         type: fmConfig.type,
         widgetType: fmConfig.widgetType,
       };
-      getToken()
-        .then((res) => {
-          data.devToken = res;
-          fs.readFile(filePath, 'utf8', (error, fileContent) => {
-            if (error) {
-              throw error;
+      // getToken()
+      //   .then((res) => {
+      //     data.devToken = res;
+      fs.readFile(filePath, 'utf8', (error, fileContent) => {
+        if (error) {
+          throw error;
+        }
+        let html = Mustache.render(fileContent, data);
+        http
+          .createServer((req, res) => {
+            res.writeHead(200, { 'Content-Type': 'text/html' });
+            res.write(html);
+            res.end();
+          })
+          .listen(8080, () => {
+            console.log(`Server running on port 8080, loading iframe on port ${port}`);
+          })
+          .on('error', (err) => {
+            if (err.code === 'EADDRINUSE') {
+              console.log('Port 8080 is already in use');
+              return;
             }
-            let html = Mustache.render(fileContent, data);
-            http
-              .createServer((req, res) => {
-                res.writeHead(200, { 'Content-Type': 'text/html' });
-                res.write(html);
-                res.end();
-              })
-              .listen(8080, () => {
-                console.log(`Server running on port 8080, loading iframe on port ${port}`);
-              })
-              .on('error', (err) => {
-                if (err.code === 'EADDRINUSE') {
-                  console.log('Port 8080 is already in use');
-                  return;
-                }
-                console.warn(err);
-              });
+            console.warn(err);
           });
-        })
-        .catch((err) => console.error(err));
+      });
+      // })
+      // .catch((err) => console.error(err));
     }
   });
-  function getToken() {
-    return new Promise((resolve, reject) => {
-      let envFilepath = `${__dirname}/.env`;
-      fs.readFile(envFilepath, 'utf8', (error, fileContent) => {
-        if (error && error.code === 'ENOENT') {
-          inquirer
-            .prompt([
-              {
-                name: 'dev_token',
-                type: 'input',
-                message: 'No Development Token configured. Please enter your Development Token:',
-              },
-            ])
-            .then((answers) => {
-              let envFilepath = `${__dirname}/.env`;
-              let envFileContent = `DEV_TOKEN=${answers.dev_token}`;
-              fs.writeFile(envFilepath, envFileContent);
-              resolve(answers.dev_token);
-            })
-            .catch((err) => reject(err));
-        } else if (error) {
-          reject(error);
-        } else {
-          resolve(fileContent.match(/^DEV_TOKEN=(\d*)$/)[1]);
-        }
-      });
-    });
-  }
+  // function getToken() {
+  //   return new Promise((resolve, reject) => {
+  //     let envFilepath = `${__dirname}/.env`;
+  //     fs.readFile(envFilepath, 'utf8', (error, fileContent) => {
+  //       if (error && error.code === 'ENOENT') {
+  //         inquirer
+  //           .prompt([
+  //             {
+  //               name: 'dev_token',
+  //               type: 'input',
+  //               message: 'No Development Token configured. Please enter your Development Token:',
+  //             },
+  //           ])
+  //           .then((answers) => {
+  //             let envFilepath = `${__dirname}/.env`;
+  //             let envFileContent = `DEV_TOKEN=${answers.dev_token}`;
+  //             fs.writeFile(envFilepath, envFileContent);
+  //             resolve(answers.dev_token);
+  //           })
+  //           .catch((err) => reject(err));
+  //       } else if (error) {
+  //         reject(error);
+  //       } else {
+  //         resolve(fileContent.match(/^DEV_TOKEN=(\d*)$/)[1]);
+  //       }
+  //     });
+  //   });
+  // }
 }

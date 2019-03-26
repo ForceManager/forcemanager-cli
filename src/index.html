@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <link href='https://fonts.googleapis.com/css?family=Roboto:400' rel='stylesheet' type='text/css'>
 </head>
-<body id="dev-body" class="fragment-{{type}}">
+<body id="dev-body" class="fragment-{{type}}" style="display: none">
     <div class="header">
         <h1 class="title">ForceManager Fragment Development - {{widgetType}} {{type}}</h1>
         <div class="config-icon" onClick="toggleConfig()">
@@ -147,9 +147,8 @@
             platform: 'dev',
             type: '{{type}}',
             widgetType: '{{widgetType}}',
-            loginToken: '{{devToken}}',
         };
-        let fmDevData = sessionStorage.getItem('fmDevData') || {};
+        let fmDevData = localStorage.getItem('fmDevData') || {};
         let devData;
         let  userDataTemplate = {
             'nic': 'User Test',
@@ -187,6 +186,7 @@
         context['userData'] = devData.userData || userDataTemplate;
 
         window.onload = function () {
+            document.getElementById('dev-body').style.display = 'flex';
             document.getElementById('input-title').value = devData.title || '';
             document.getElementById('widget-title').innerHTML = devData.title || '';
             document.getElementById('public-key').value = devData.publicKey || '';
@@ -231,16 +231,20 @@
                     domEl = 'page-content';
                     break;
             }
-            if (context.entity) {
+            let panel = document.getElementById('config-panel');
+            if (context.entity && devData.logged) {
                 window.FmBridgeBackend.setContext(context);
                 window.FmBridgeBackend.init();
                 // window.FmBridgeBackend.setContext(context);
                 window.FmBridgeBackend.loadFragment(name, 'http://localhost:{{port}}', domEl);
-            } else {
+            } else if (!context.entity) {
                 console.log('No entity set')
-                let panel = document.getElementById('config-panel');
-                document.getElementById('label-entity').css('color', 'red');
-                panel.classList.toggle("show");
+                document.getElementById('label-entity').classList.add('error');
+                panel.classList.toggle('show');
+            } else if (!devData.logged) {
+                console.log('Not logged in')
+                panel.classList.toggle('show');
+                selctTab(null, 'login-tab');
             }
             // Get form's DOM object
             let login = document.getElementById('login');
@@ -248,9 +252,6 @@
                 e.preventDefault();
                 let privateKey = document.getElementById('private-key').value;
                 let publicKey = document.getElementById('public-key').value;
-                devData.publicKey = document.getElementById('public-key').value;
-                fmDevData[name] = devData;
-                sessionStorage.setItem('fmDevData', JSON.stringify(fmDevData));
                 window.FmBridgeBackend.getDevLoginToken(name, publicKey, privateKey)
                     .then(function() {
                         console.log('getDevLoginToken OK');
@@ -258,8 +259,10 @@
                             var c = new PasswordCredential(e.target);
                             navigator.credentials.store(c);
                         }
-                        selctTab(null, 'options-tab');
-                        toggleConfig();
+                        devData.logged = true;
+                        fmDevData[name] = devData;
+                        localStorage.setItem('fmDevData', JSON.stringify(fmDevData));
+                        location.reload();
                     })
                     .catch(function(err) {
                         console.warn(err);
@@ -300,7 +303,7 @@
             devData.entityId = document.getElementById('entity-id').value;
             devData.userData = JSON.parse(document.getElementById('user-data').innerHTML);
             fmDevData[name] = devData;
-            sessionStorage.setItem('fmDevData', JSON.stringify(fmDevData));
+            localStorage.setItem('fmDevData', JSON.stringify(fmDevData));
             location.reload();
         };
 
@@ -384,6 +387,14 @@
             hideSignatureView() {
                 document.getElementById('signature').classList.remove('show');
             },
+
+            expiredDevLoginToken() {
+                console.log('expiredDevLoginToken');
+                devData.logged = false;
+                fmDevData[name] = devData;
+                localStorage.setItem('fmDevData', JSON.stringify(fmDevData));
+                location.reload();
+            }
         };
 
         function confirmDialog(res) {
@@ -410,7 +421,6 @@
 <style>
     body{
         position: relative;
-        display: flex;
         flex-wrap: wrap;
         width: 100vw;
         height: 100vh;
@@ -582,6 +592,9 @@
         width: 100%;
         margin-bottom: 10px;
     }
+    label#label-entity.error{
+        color: red;
+    }
     .radio-buttons {
     }
     .radio-buttons .form-item {
@@ -595,7 +608,8 @@
         margin: 2px 0 0 0;
     }
     .widget {
-        width: 435px;
+        width: 0;
+        height: 0;
         max-width: 100%;
         background-color: white;
         margin: 20px;
