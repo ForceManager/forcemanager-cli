@@ -3,8 +3,14 @@ const [, , ...args] = process.argv;
 const currnetPath = process.cwd();
 const inquirer = require('inquirer');
 const fs = require('fs-extra');
+const path = require('path');
 const readdirp = require('readdirp');
 const Mustache = require('mustache');
+const AWS = require('aws-sdk');
+const editJsonFile = require('edit-json-file');
+
+// require('dotenv').config();
+require('dotenv').config({ path: path.resolve(__dirname, '.env') });
 
 console.log(
   '\x1b[33m',
@@ -33,9 +39,9 @@ if (args[0] == 'create') {
       ' my-custom-widget\n',
     );
   } else {
-    if (!fs.existsSync(`${currnetPath}/${name}`)) {
+    if (!fs.existsSync(resolve.join(currnetPath, name))) {
       getDetails(false);
-    } else if (fs.existsSync(`${currnetPath}/${name}/fmConfig.json`)) {
+    } else if (fs.existsSync(resolve.join(currnetPath, name, 'fmConfig.json'))) {
       console.log(
         `The project ${name} alredy exists as a ForceManager Fragment. Please start again the create process and choose another project name.\n`,
       );
@@ -92,7 +98,7 @@ if (args[0] == 'create') {
               }
             },
           };
-          settings.root = `${__dirname}/templates/${fmConfigData.type}`;
+          settings.root = path.resolve(__dirname, 'templates', fmConfigData.type);
           if (convert) {
             settings.depth = 0;
             settings.entryType = 'files';
@@ -116,11 +122,11 @@ if (args[0] == 'create') {
     }
     function copyFiles() {
       console.log('allFiles', allFiles);
-      fs.mkdirp(`${currnetPath}/${fmConfigData.name}`)
+      fs.mkdirp(path.resolve(currnetPath, fmConfigData.name))
         .then(() => {
           for (const file of allFiles) {
             if (fs.lstatSync(file.fullPath).isDirectory()) {
-              fs.mkdirp(`${currnetPath}/${fmConfigData.name}/${file.path}`, (err) => {
+              fs.mkdirp(path.resolve(currnetPath, fmConfigData.name, file.path), (err) => {
                 if (err) console.error(err);
               });
               continue;
@@ -134,7 +140,7 @@ if (args[0] == 'create') {
                 outputfileContent = Mustache.render(fileContent, fmConfigData);
               }
               fs.writeFile(
-                `${currnetPath}/${fmConfigData.name}/${file.path.replace('.mustache', '')}`,
+                path.resolve(currnetPath, fmConfigData.name, file.path.replace('.mustache', '')),
                 outputfileContent,
                 (err) => {
                   if (err) {
@@ -150,15 +156,133 @@ if (args[0] == 'create') {
     }
   }
 } else if (args[0] === 'deploy') {
-  console.log('This option is not ready yet');
+  fs.readFile(path.resolve(currnetPath, 'fmConfig.json'), 'utf8', (error, fileContent) => {
+    if (error) {
+      console.log('No existe un proyecto válido en esta ubicación');
+    } else {
+      let fmConfig = JSON.parse(fileContent);
+      let AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
+      let AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
+
+      checkAWSkeys = () => {
+        if (AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY) {
+          return Promise.resolve();
+        } else {
+          return inquirer
+            .prompt([
+              {
+                name: 'aws__access_key_id',
+                ttype: 'input',
+                message: 'Enter your AWS_ACCESS_KEY_ID:',
+              },
+              {
+                name: 'aws_secret_access_key',
+                type: 'input',
+                message: 'Enter your AWS_SECRET_ACCESS_KEY:',
+              },
+            ])
+            .then((answers) => {
+              let AWS_ACCESS_KEY_ID = answers.aws__access_key_id;
+              let AWS_SECRET_ACCESS_KEY = answers.aws_secret_access_key;
+              let envFilepath = path.resolve(__dirname, '.env');
+              let envFileContent = `AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}\nAWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}`;
+              return fs.writeFile(envFilepath, envFileContent);
+            })
+            .catch((err) => console.error(err));
+        }
+      };
+
+      checkGuid = () => {
+        if (fmConfig.guid) {
+          return Promise.resolve();
+        } else {
+          return inquirer
+            .prompt([
+              {
+                name: 'guid',
+                ttype: 'input',
+                message: 'Enter the GUID',
+              },
+            ])
+            .then((answers) => {
+              let fmConfigEdit = editJsonFile(path.resolve(currnetPath, 'fmConfig.json'));
+              console.log('fmConfigEdit', fmConfigEdit);
+              fmConfigEdit.set('guid', answers.guid);
+              fmConfigEdit.save();
+              fmConfig.guid = answers.guid;
+            })
+            .catch((err) => console.error(err));
+        }
+      };
+
+      uploadFiles = () => {
+        return new Promise((resolve, reject) => {
+          const s3 = new AWS.S3({
+            accessKeyId: AWS_ACCESS_KEY_ID,
+            secretAccessKey: AWS_SECRET_ACCESS_KEY,
+            signatureVersion: 'v4',
+          });
+          const distFolderPath = path.join(currnetPath, `./${fmConfig.distFolder}`);
+          let settings = {
+            root: distFolderPath,
+            entryType: 'all',
+          };
+          let allFiles = [];
+          readdirp(settings)
+            .on('data', function(file) {
+              allFiles.push(file);
+            })
+            .on('warn', function(warn) {
+              reject(warn);
+            })
+            .on('error', function(err) {
+              reject(err);
+            })
+            .on('end', function() {
+              let promises = [];
+              for (const file of allFiles) {
+                if (fs.lstatSync(file.fullPath).isDirectory()) {
+                  continue;
+                }
+                promises.push(
+                  fs
+                    .readFile(file.fullPath)
+                    .then((fileContent) => {
+                      const params = {
+                        Bucket: 'fmassets',
+                        Key: `fragments/${fmConfig.guid}/${file.path}`,
+                        Body: fileContent,
+                      };
+                      return s3.upload(params).promise();
+                    })
+                    .then((data) => {
+                      console.log(`Successfully uploaded '${file.fullPath}' in ${data.Location}`);
+                    })
+                    .catch((err) => reject(err)),
+                );
+              }
+              Promise.all(promises)
+                .then(() => resolve())
+                .catch((err) => reject(err));
+            });
+        });
+      };
+
+      checkAWSkeys()
+        .then(() => checkGuid())
+        .then(() => uploadFiles())
+        .then(() => console.log('Done!'))
+        .catch((err) => console.error(err));
+    }
+  });
 } else if (args[0] === 'start') {
-  fs.readFile(`${currnetPath}/fmConfig.json`, 'utf8', (error, fileContent) => {
+  fs.readFile(path.resolve(currnetPath, 'fmConfig.json'), 'utf8', (error, fileContent) => {
     if (error) {
       console.log('No existe un proyecto válido en esta ubicación');
     } else {
       let fmConfig = JSON.parse(fileContent);
       let http = require('http');
-      let filePath = `${__dirname}/src/index.html`;
+      let filePath = path.resolve(__dirname, '/src/index.html');
       let port = args[1] ? args[1] : 3000;
       let data = {
         port,
@@ -166,9 +290,6 @@ if (args[0] == 'create') {
         type: fmConfig.type,
         widgetType: fmConfig.widgetType,
       };
-      // getToken()
-      //   .then((res) => {
-      //     data.devToken = res;
       fs.readFile(filePath, 'utf8', (error, fileContent) => {
         if (error) {
           throw error;
@@ -191,36 +312,6 @@ if (args[0] == 'create') {
             console.warn(err);
           });
       });
-      // })
-      // .catch((err) => console.error(err));
     }
   });
-  // function getToken() {
-  //   return new Promise((resolve, reject) => {
-  //     let envFilepath = `${__dirname}/.env`;
-  //     fs.readFile(envFilepath, 'utf8', (error, fileContent) => {
-  //       if (error && error.code === 'ENOENT') {
-  //         inquirer
-  //           .prompt([
-  //             {
-  //               name: 'dev_token',
-  //               type: 'input',
-  //               message: 'No Development Token configured. Please enter your Development Token:',
-  //             },
-  //           ])
-  //           .then((answers) => {
-  //             let envFilepath = `${__dirname}/.env`;
-  //             let envFileContent = `DEV_TOKEN=${answers.dev_token}`;
-  //             fs.writeFile(envFilepath, envFileContent);
-  //             resolve(answers.dev_token);
-  //           })
-  //           .catch((err) => reject(err));
-  //       } else if (error) {
-  //         reject(error);
-  //       } else {
-  //         resolve(fileContent.match(/^DEV_TOKEN=(\d*)$/)[1]);
-  //       }
-  //     });
-  //   });
-  // }
 }
