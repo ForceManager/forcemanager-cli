@@ -39,9 +39,9 @@ if (args[0] == 'create') {
       ' my-custom-widget\n',
     );
   } else {
-    if (!fs.existsSync(resolve.join(currnetPath, name))) {
+    if (!fs.existsSync(path.join(currnetPath, name))) {
       getDetails(false);
-    } else if (fs.existsSync(resolve.join(currnetPath, name, 'fmConfig.json'))) {
+    } else if (fs.existsSync(path.join(currnetPath, name, 'fmConfig.json'))) {
       console.log(
         `The project ${name} alredy exists as a ForceManager Fragment. Please start again the create process and choose another project name.\n`,
       );
