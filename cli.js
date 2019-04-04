@@ -8,6 +8,7 @@ const readdirp = require('readdirp');
 const Mustache = require('mustache');
 const AWS = require('aws-sdk');
 const editJsonFile = require('edit-json-file');
+const open = require('open');
 
 // require('dotenv').config();
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
@@ -302,6 +303,7 @@ if (args[0] == 'create') {
             res.end();
           })
           .listen(8080, () => {
+            open('http://localhost:8080');
             console.log(`Server running on port 8080, loading iframe on port ${port}`);
           })
           .on('error', (err) => {

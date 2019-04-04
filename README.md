@@ -28,9 +28,7 @@ You can create new project o convert existing ones.
 
 * Go to the folder where you want to create the project.
 
-* `fm-cli create`.
-
-* Choose a project name.
+* `fm-cli create <project-name>`.
 
 * If the project exist but is not a ForceManager project you can convert the existing project in a Fragment.
 
