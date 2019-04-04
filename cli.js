@@ -206,7 +206,6 @@ if (args[0] == 'create') {
             ])
             .then((answers) => {
               let fmConfigEdit = editJsonFile(path.resolve(currnetPath, 'fmConfig.json'));
-              console.log('fmConfigEdit', fmConfigEdit);
               fmConfigEdit.set('guid', answers.guid);
               fmConfigEdit.save();
               fmConfig.guid = answers.guid;
@@ -222,7 +221,8 @@ if (args[0] == 'create') {
             secretAccessKey: AWS_SECRET_ACCESS_KEY,
             signatureVersion: 'v4',
           });
-          const distFolderPath = path.join(currnetPath, `./${fmConfig.distFolder}`);
+          const distFolderPath = path.join(currnetPath, fmConfig.distFolder);
+          console.log('distFolderPath', distFolderPath);
           let settings = {
             root: distFolderPath,
             entryType: 'all',
@@ -282,7 +282,7 @@ if (args[0] == 'create') {
     } else {
       let fmConfig = JSON.parse(fileContent);
       let http = require('http');
-      let filePath = path.resolve(__dirname, '/src/index.html');
+      let filePath = path.resolve(__dirname, 'src', 'index.html');
       let port = args[1] ? args[1] : 3000;
       let data = {
         port,

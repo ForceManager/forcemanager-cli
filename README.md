@@ -2,7 +2,7 @@
 
 Development tool to create ForceManager Fragments.
 
-Fragments are isolated parts of code enbeded in ForceManager divided in 3 types: Widgets, Forms and Pages.
+Fragments are isolated parts of code embeded in ForceManager divided in 3 types: Widgets, Forms and Pages.
 
 ## ⭐️ Features
 
@@ -17,14 +17,14 @@ Fragments are isolated parts of code enbeded in ForceManager divided in 3 types:
 npm install -g forcemanager-cli
 
 // with yarn
-yarn add -g forcemanager-cli
+yarn add global forcemanager-cli
 ```
 
 ## ⚙️ Usage
 
 ### Create Fragment
 
-You can create new project o covert existing ones.
+You can create new project o convert existing ones.
 
 * Go to the folder where you want to create the project.
 
