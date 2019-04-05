@@ -303,7 +303,7 @@ if (args[0] == 'create') {
             res.end();
           })
           .listen(8080, () => {
-            open('http://localhost:8080');
+            // open('http://localhost:8080');
             console.log(`Server running on port 8080, loading iframe on port ${port}`);
           })
           .on('error', (err) => {
