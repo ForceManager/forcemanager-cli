@@ -20,6 +20,14 @@ console.log(
 console.log('\x1b[37m', '');
 
 if (args[0] == 'create') {
+  create();
+} else if (args[0] === 'deploy') {
+  deploy();
+} else if (args[0] === 'start') {
+  start();
+}
+
+function create() {
   let fmConfigData;
   let settings = {
     root: '',
@@ -121,6 +129,7 @@ if (args[0] == 'create') {
         })
         .catch((err) => console.error(err));
     }
+
     function copyFiles() {
       console.log('allFiles', allFiles);
       fs.mkdirp(path.resolve(currnetPath, fmConfigData.name))
@@ -156,7 +165,9 @@ if (args[0] == 'create') {
         .catch((err) => console.error(err));
     }
   }
-} else if (args[0] === 'deploy') {
+}
+
+function deploy() {
   fs.readFile(path.resolve(currnetPath, 'fmConfig.json'), 'utf8', (error, fileContent) => {
     if (error) {
       console.log('No existe un proyecto válido en esta ubicación');
@@ -276,14 +287,13 @@ if (args[0] == 'create') {
         .catch((err) => console.error(err));
     }
   });
-} else if (args[0] === 'start') {
-  fs.readFile(path.resolve(currnetPath, 'fmConfig.json'), 'utf8', (error, fileContent) => {
-    if (error) {
-      console.log('No existe un proyecto válido en esta ubicación');
-    } else {
+}
+
+function start() {
+  fs.readFile(path.resolve(currnetPath, 'fmConfig.json'), 'utf8')
+    .then((fileContent) => {
       let fmConfig = JSON.parse(fileContent);
       let http = require('http');
-      let filePath = path.resolve(__dirname, 'src', 'index.html');
       let port = args[1] ? args[1] : 3000;
       let data = {
         port,
@@ -291,29 +301,47 @@ if (args[0] == 'create') {
         type: fmConfig.type,
         widgetType: fmConfig.widgetType,
       };
-      fs.readFile(filePath, 'utf8', (error, fileContent) => {
-        if (error) {
-          throw error;
-        }
-        let html = Mustache.render(fileContent, data);
-        http
-          .createServer((req, res) => {
-            res.writeHead(200, { 'Content-Type': 'text/html' });
-            res.write(html);
-            res.end();
-          })
-          .listen(8080, () => {
-            // open('http://localhost:8080');
-            console.log(`Server running on port 8080, loading iframe on port ${port}`);
-          })
-          .on('error', (err) => {
-            if (err.code === 'EADDRINUSE') {
-              console.log('Port 8080 is already in use');
-              return;
-            }
-            console.warn(err);
-          });
-      });
-    }
-  });
+      let readHtml = fs.readFile(path.resolve(__dirname, 'src', 'index.html'), 'utf8');
+      let readCss = fs.readFile(path.resolve(__dirname, 'src', 'styles.css'), 'utf8');
+      let readJs = fs.readFile(path.resolve(__dirname, 'src', 'script.js'), 'utf8');
+      Promise.all([readHtml, readCss, readJs])
+        .then((fileContents) => {
+          let html = Mustache.render(fileContents[0], data);
+          let css = fileContents[1];
+          let js = Mustache.render(fileContents[2], data);
+          http
+            .createServer((req, res) => {
+              switch (req.url) {
+                case '/styles.css':
+                  res.writeHead(200, { 'Content-Type': 'text/css' });
+                  res.write(css);
+                  break;
+                case '/script.js':
+                  res.writeHead(200, { 'Content-Type': 'text/javascript' });
+                  res.write(js);
+                  break;
+                default:
+                  res.writeHead(200, { 'Content-Type': 'text/html' });
+                  res.write(html);
+                  break;
+              }
+              res.end();
+            })
+            .listen(8080, () => {
+              open('http://localhost:8080');
+              console.log(`Server running on port 8080, loading iframe on port ${port}`);
+            })
+            .on('error', (err) => {
+              if (err.code === 'EADDRINUSE') {
+                console.log('Port 8080 is already in use');
+                return;
+              }
+              console.warn(err);
+            });
+        })
+        .catch((err) => console.error(err));
+    })
+    .catch((err) => {
+      console.log('No existe un proyecto válido en esta ubicación');
+    });
 }

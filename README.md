@@ -32,7 +32,7 @@ You can create new project o convert existing ones.
 
 * If the project exist but is not a ForceManager project you can convert the existing project in a Fragment.
 
-* Follow the next steps
+* Follow the create assistant steps
 
 
 ### Start a dev server
@@ -46,16 +46,18 @@ The default port of localhost that is going to be loaded inside the iframe is 30
 
 * `fm-cli start` or `fm-cli start 4000`
 
-* Configure the URL Base of the ForceManager API you want to use, the development Token and the other options.
+* Configure Options and set Private and Public Key to login.
 
 
 ### Deploy Fragment
 
-Deploy a new Fragment to sandbox or update an existing one.
+Deploy the code of a Fragment to AWS.
 
 * Go to the folder of the project you want to deploy.
 
 * `fm-cli deploy`
+
+* Set GUID if is not alredy set.
 
 
 ## 🙌 Contributing
