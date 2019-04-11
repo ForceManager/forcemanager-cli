@@ -118,7 +118,7 @@ window.onload = function() {
         devData.logged = true;
         fmDevData[name] = devData;
         localStorage.setItem('fmDevData', JSON.stringify(fmDevData));
-        location.reload();
+        // location.reload();
       })
       .catch(function(err) {
         console.warn(err);

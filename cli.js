@@ -27,6 +27,28 @@ if (args[0] == 'create') {
   start();
 }
 
+function slugify(str) {
+  var map = {
+    '-': ' ',
+    '-': '_',
+    a: 'á|à|ã|â|À|Á|Ã|Â',
+    e: 'é|è|ê|É|È|Ê',
+    i: 'í|ì|î|Í|Ì|Î',
+    o: 'ó|ò|ô|õ|Ó|Ò|Ô|Õ',
+    u: 'ú|ù|û|ü|Ú|Ù|Û|Ü',
+    c: 'ç|Ç',
+    n: 'ñ|Ñ',
+  };
+
+  str = str.toLowerCase();
+
+  for (var pattern in map) {
+    str = str.replace(new RegExp(map[pattern], 'g'), pattern);
+  }
+
+  return str;
+}
+
 function create() {
   let fmConfigData;
   let settings = {
@@ -48,6 +70,7 @@ function create() {
       ' my-custom-widget\n',
     );
   } else {
+    name = slugify(name);
     if (!fs.existsSync(path.join(currnetPath, name))) {
       getDetails(false);
     } else if (fs.existsSync(path.join(currnetPath, name, 'fmConfig.json'))) {
@@ -83,29 +106,30 @@ function create() {
             choices: ['Widget', 'Form', 'Page'],
             default: 0,
           },
-          {
-            name: 'widget_type',
-            type: 'list',
-            message: 'Widget type',
-            choices: ['Entity widget', 'SFM widget'],
-            default: 0,
-            when: function(answers) {
-              return answers.type === 'Widget';
-            },
-          },
+          // {
+          //   name: 'widget_type',
+          //   type: 'list',
+          //   message: 'Widget type',
+          //   choices: ['Entity widget', 'SFM widget'],
+          //   default: 0,
+          //   when: function(answers) {
+          //     return answers.type === 'Widget';
+          //   },
+          // },
         ])
         .then((answers) => {
           fmConfigData = {
             name: name,
             type: answers.type.toLowerCase(),
-            widget_type: function() {
-              switch (answers.widget_type) {
-                case 'Entity widget':
-                  return 'entity';
-                case 'SFM widget':
-                  return 'sfm';
-              }
-            },
+            widget_type: 'entity',
+            // widget_type: function() {
+            //   switch (answers.widget_type) {
+            //     case 'Entity widget':
+            //       return 'entity';
+            //     case 'SFM widget':
+            //       return 'sfm';
+            //   }
+            // },
           };
           settings.root = path.resolve(__dirname, 'templates', fmConfigData.type);
           if (convert) {
@@ -131,7 +155,6 @@ function create() {
     }
 
     function copyFiles() {
-      console.log('allFiles', allFiles);
       fs.mkdirp(path.resolve(currnetPath, fmConfigData.name))
         .then(() => {
           for (const file of allFiles) {
