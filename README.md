@@ -28,11 +28,17 @@ You can create new project o convert existing ones.
 
 * Go to the folder where you want to create the project.
 
-* `fm-cli create <project-name>`.
-
-* If the project exist but is not a ForceManager project you can convert the existing project in a Fragment.
+* `fm-cli create <project-name>`
 
 * Follow the create assistant steps
+
+* If the directory <project-name> exist but is not a ForceManager project you can convert the existing project in a Fragment.
+
+* If the doesn't exist, a 'Hello World' project will be created in the specified <project-name> directory.
+
+* `cd <project-name>`
+
+* `yarn istall` or `npm istall`
 
 
 ### Start a dev server
