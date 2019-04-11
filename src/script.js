@@ -7,6 +7,7 @@ let context = {
 };
 let fmDevData = localStorage.getItem('fmDevData') || {};
 let devData;
+let options;
 let userDataTemplate = {
   nic: 'User Test',
   nombre: 'User',
@@ -32,7 +33,6 @@ let userDataTemplate = {
 };
 try {
   fmDevData = JSON.parse(fmDevData);
-  console.log('fmDevData', fmDevData);
   devData = fmDevData[name] || {};
 } catch (error) {
   console.warn(error);
@@ -67,6 +67,7 @@ window.onload = function() {
       document.getElementById('form').outerHTML = '';
       document.getElementById('page').outerHTML = '';
       domEl = 'widget-content';
+      options = !!context.entity;
       break;
     case 'form':
       document.getElementById('form').style.display = 'block';
@@ -80,16 +81,19 @@ window.onload = function() {
         idState: -1,
         endState: 0,
       };
+      options = true;
       break;
     case 'page':
       document.getElementById('form').outerHTML = '';
       document.getElementById('widget').outerHTML = '';
       document.getElementById('page').style.display = 'block';
       domEl = 'page-content';
+      options = true;
       break;
   }
   let panel = document.getElementById('config-panel');
-  if (context.entity && devData.logged) {
+
+  if (options && devData.logged) {
     window.FmBridgeBackend.setContext(context);
     window.FmBridgeBackend.init();
     window.FmBridgeBackend.loadFragment(name, 'http://localhost:{{port}}', domEl);
@@ -118,7 +122,7 @@ window.onload = function() {
         devData.logged = true;
         fmDevData[name] = devData;
         localStorage.setItem('fmDevData', JSON.stringify(fmDevData));
-        // location.reload();
+        location.reload();
       })
       .catch(function(err) {
         console.warn(err);

@@ -479,3 +479,15 @@ label#label-entity.error{
     text-align: center;
     cursor: pointer;
 }
+
+.config-panel-item-widget,
+.config-panel-item-page,
+.config-panel-item-form  {
+    display: none;
+}
+
+.fragment-widget .config-panel-item-widget,
+.fragment-page .config-panel-item-page,
+.fragment-form .config-panel-item-form {
+    display: block;
+}

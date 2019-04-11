@@ -122,16 +122,21 @@ function create() {
             name: name,
             type: answers.type.toLowerCase(),
             widget_type: 'entity',
-            // widget_type: function() {
-            //   switch (answers.widget_type) {
-            //     case 'Entity widget':
-            //       return 'entity';
-            //     case 'SFM widget':
-            //       return 'sfm';
-            //   }
-            // },
+            widget_type: function() {
+              if (answers.type === 'Widget') {
+                return 'entity';
+                // switch (answers.widget_type) {
+                //   case 'Entity widget':
+                //     return 'entity';
+                //   case 'SFM widget':
+                //     return 'sfm';
+                // }
+              } else {
+                return '';
+              }
+            },
           };
-          settings.root = path.resolve(__dirname, 'templates', fmConfigData.type);
+          settings.root = path.resolve(__dirname, 'template');
           if (convert) {
             settings.depth = 0;
             settings.entryType = 'files';
@@ -257,7 +262,6 @@ function deploy() {
             signatureVersion: 'v4',
           });
           const distFolderPath = path.join(currnetPath, fmConfig.distFolder);
-          console.log('distFolderPath', distFolderPath);
           let settings = {
             root: distFolderPath,
             entryType: 'all',
