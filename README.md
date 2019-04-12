@@ -12,12 +12,17 @@ Fragments are isolated parts of code embedded in ForceManager divided into 3 typ
 
 ## 📦 Installation
 
+With yarn (recommended):
+
 ```
-// with npm
+yarn add global forcemanager-cli
+```
+
+With npm:
+
+```
 npm install -g forcemanager-cli
 
-// with yarn
-yarn add global forcemanager-cli
 ```
 
 ## ⚙️ Usage
