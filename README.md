@@ -1,8 +1,8 @@
 # ForceManager CLI
 
-Development tool to create ForceManager Fragments.
+A development tool to create ForceManager Fragments.
 
-Fragments are isolated parts of code embeded in ForceManager divided in 3 types: Widgets, Forms and Pages.
+Fragments are isolated parts of code embedded in ForceManager divided into 3 types: Widgets, Forms, and Pages.
 
 ## ⭐️ Features
 
@@ -28,22 +28,26 @@ You can create new project o convert existing ones.
 
 * Go to the folder where you want to create the project.
 
-* `fm-cli create <project-name>`
+#### 1) Create new project
 
-* Follow the create assistant steps
+* `fm-cli create <new-project-name>`
 
-* If the directory <project-name> exist but is not a ForceManager project you can convert the existing project in a Fragment.
+* Follow the create assistant steps. A'Hello World' project will be created in the specified <new-project-name> directory.
 
-* If the doesn't exist, a 'Hello World' project will be created in the specified <project-name> directory.
-
-* `cd <project-name>`
+* `cd <new-project-name>`
 
 * `yarn istall` or `npm istall`
+
+2) Convert existing project
+
+* `fm-cli create <existing-project-name>`
+
+* Follow the create assistant steps
 
 
 ### Start a dev server
 
-To start a server with an iframe where your Fragment is going to be embeded.
+To start a server with an iframe where your Fragment is going to be embedded.
 The default port of localhost that is going to be loaded inside the iframe is 3000. You can change this port specifying a different number.
 
 * Run your project in any port of localhost.
