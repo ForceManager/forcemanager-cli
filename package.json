@@ -1,6 +1,6 @@
 {
   "name": "forcemanager-cli",
-  "version": "0.0.1-alpha.18",
+  "version": "0.0.1-alpha.19",
   "license": "MIT",
   "author": "SPT <sergi.palau@forcemanager.net>",
   "private": false,
@@ -28,7 +28,7 @@
   "description": "ForceManager CLI",
   "repository": {
     "type": "git",
-    "url": ""
+    "url": "git@github.com:ForceManager/forcemanager-cli.git"
   },
   "bin": {
     "fm-cli": "./cli.js"

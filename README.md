@@ -26,9 +26,9 @@ yarn add global forcemanager-cli
 
 You can create new project o convert existing ones.
 
-* Go to the folder where you want to create the project.
-
 #### 1) Create new project
+
+* Go to the folder where you want to create the project.
 
 * `fm-cli create <new-project-name>`
 
@@ -38,9 +38,11 @@ You can create new project o convert existing ones.
 
 * `yarn istall` or `npm istall`
 
-2) Convert existing project
+#### 2) Convert existing project
 
-* `fm-cli create <existing-project-name>`
+* Go to the folder where you have the project.
+
+* `fm-cli create <existing-directory-project-name>`
 
 * Follow the create assistant steps
 
@@ -50,13 +52,13 @@ You can create new project o convert existing ones.
 To start a server with an iframe where your Fragment is going to be embedded.
 The default port of localhost that is going to be loaded inside the iframe is 3000. You can change this port specifying a different number.
 
-* Run your project in any port of localhost.
-
 * Go to the folder of the project you want to load.
+
+* Run your project in any port of localhost (`yarn start`, `npm ng serve`, ...).
 
 * `fm-cli start` or `fm-cli start 4000`
 
-* Configure Options and set Private and Public Key to login.
+* Configure Options and set Private and Public Key to API login.
 
 
 ### Deploy Fragment
