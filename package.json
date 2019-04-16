@@ -1,6 +1,6 @@
 {
   "name": "forcemanager-cli",
-  "version": "0.0.1-beta.1",
+  "version": "0.0.1-beta.2",
   "description": "ForceManager CLI",
   "homepage": "https://github.com/ForceManager/forcemanager-cli",
   "bugs": {
@@ -25,6 +25,7 @@
     "fs-extra": "^7.0.0",
     "http": "0.0.0",
     "inquirer": "^6.1.0",
+    "mime-types": "^2.1.22",
     "mini-css-extract-plugin": "^0.5.0",
     "mustache": "^2.3.1",
     "open": "^6.0.0",
@@ -34,7 +35,6 @@
     "save-dev": "^2.0.0",
     "uglifyjs-webpack-plugin": "^2.1.2"
   },
-  "devDependencies": {
-  },
+  "devDependencies": {},
   "private": false
 }

@@ -9,6 +9,7 @@ const Mustache = require('mustache');
 const AWS = require('aws-sdk');
 const editJsonFile = require('edit-json-file');
 const open = require('open');
+const mime = require('mime-types');
 
 // require('dotenv').config();
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
@@ -291,6 +292,7 @@ function deploy() {
                         Bucket: 'fmassets',
                         Key: `fragments/${fmConfig.guid}/${file.path}`,
                         Body: fileContent,
+                        ContentType: mime.lookup(file.path),
                       };
                       return s3.upload(params).promise();
                     })
