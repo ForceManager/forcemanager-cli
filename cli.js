@@ -10,6 +10,7 @@ const AWS = require('aws-sdk');
 const editJsonFile = require('edit-json-file');
 const open = require('open');
 const mime = require('mime-types');
+const axios = require('axios');
 
 // require('dotenv').config();
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
@@ -202,36 +203,8 @@ function deploy() {
       console.log('No existe un proyecto válido en esta ubicación');
     } else {
       let fmConfig = JSON.parse(fileContent);
-      let AWS_ACCESS_KEY_ID = process.env.AWS_ACCESS_KEY_ID;
-      let AWS_SECRET_ACCESS_KEY = process.env.AWS_SECRET_ACCESS_KEY;
-
-      checkAWSkeys = () => {
-        if (AWS_ACCESS_KEY_ID && AWS_SECRET_ACCESS_KEY) {
-          return Promise.resolve();
-        } else {
-          return inquirer
-            .prompt([
-              {
-                name: 'aws__access_key_id',
-                ttype: 'input',
-                message: 'Enter your AWS_ACCESS_KEY_ID:',
-              },
-              {
-                name: 'aws_secret_access_key',
-                type: 'input',
-                message: 'Enter your AWS_SECRET_ACCESS_KEY:',
-              },
-            ])
-            .then((answers) => {
-              let AWS_ACCESS_KEY_ID = answers.aws__access_key_id;
-              let AWS_SECRET_ACCESS_KEY = answers.aws_secret_access_key;
-              let envFilepath = path.resolve(__dirname, '.env');
-              let envFileContent = `AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}\nAWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}`;
-              return fs.writeFile(envFilepath, envFileContent);
-            })
-            .catch((err) => console.error(err));
-        }
-      };
+      let cfm_user = process.env.CFM_USER;
+      let cfm_token = process.env.CFM_TOKEN;
 
       checkGuid = () => {
         if (fmConfig.guid) {
@@ -255,13 +228,80 @@ function deploy() {
         }
       };
 
-      uploadFiles = () => {
-        return new Promise((resolve, reject) => {
-          const s3 = new AWS.S3({
-            accessKeyId: AWS_ACCESS_KEY_ID,
-            secretAccessKey: AWS_SECRET_ACCESS_KEY,
-            signatureVersion: 'v4',
+      checkToken = () => {
+        if (cfm_token) {
+          return Promise.resolve();
+        } else {
+          return login()
+            .then((res) => fs.writeFile(res.envFilepath, res.envFileContent))
+            .catch((err) => console.error('checkToken error'));
+        }
+      };
+
+      login = () => {
+        return inquirer
+          .prompt([
+            {
+              name: 'username',
+              type: 'input',
+              message: 'Email:',
+              default: cfm_user,
+            },
+            {
+              name: 'password',
+              type: 'password',
+              message: 'Password:',
+            },
+          ])
+          .then((answers) => {
+            cfm_user = answers.username;
+            return axios({
+              method: 'post',
+              url: 'https://be-cfmsta.forcemanager.net/api/authenticate/v1/login',
+              data: { username: answers.username, password: answers.password },
+              timeout: 30000,
+              withCredentials: false,
+              maxContentLength: 128 * 1024 * 1024,
+              dataType: 'json',
+              contentType: 'application/json',
+              accept: '*/*',
+            });
+          })
+          .then((res) => {
+            console.log('token', res);
+            cfm_token = res.data.token;
+            let envFilepath = path.resolve(__dirname, '.env');
+            let envFileContent = `USER=${cfm_user}\nCFM_TOKEN=${cfm_token}`;
+            return fs.writeFile(envFilepath, envFileContent);
+          })
+          .catch((err) => {
+            if (err.response && err.response.status === 400) {
+              console.log('Wrong user or password');
+              return login();
+            } else if (err.response && err.response.status === 401) {
+              console.log('Expired token');
+              cfm_token = undefined;
+              return login();
+            } else {
+              console.error(err);
+            }
           });
+      };
+
+      getUploadUrl = () => {
+        return axios({
+          method: 'get',
+          // url: `https://be-cfmsta.forcemanager.net/api/fragments/v1/${fmConfig.guid}/upload`,
+          url: `https://be-cfmsta.forcemanager.net/api/widgets/v1/206/upload`,
+          headers: { Authorization: `Bearer ${cfm_token}` },
+          contentType: 'application/json',
+          accept: '*/*',
+        });
+      };
+
+      uploadFiles = (signedUrl) => {
+        console.log('uploadFiles', signedUrl);
+        return new Promise((resolve, reject) => {
           const distFolderPath = path.join(currnetPath, fmConfig.distFolder);
           let settings = {
             root: distFolderPath,
@@ -288,16 +328,16 @@ function deploy() {
                   fs
                     .readFile(file.fullPath)
                     .then((fileContent) => {
-                      const params = {
-                        Bucket: 'fmassets',
-                        Key: `fragments/${fmConfig.guid}/${file.path}`,
-                        Body: fileContent,
-                        ContentType: mime.lookup(file.path),
+                      const options = {
+                        headers: {
+                          'Content-Type': mime.lookup(file.path),
+                        },
                       };
-                      return s3.upload(params).promise();
+                      return axios.put(signedUrl, fileContent, options);
                     })
-                    .then((data) => {
-                      console.log(`Successfully uploaded '${file.fullPath}' in ${data.Location}`);
+                    .then((res) => {
+                      console.log(res);
+                      // console.log(`Successfully uploaded '${file.fullPath}' in ${data.Location}`);
                     })
                     .catch((err) => reject(err)),
                 );
@@ -309,9 +349,10 @@ function deploy() {
         });
       };
 
-      checkAWSkeys()
-        .then(() => checkGuid())
-        .then(() => uploadFiles())
+      checkGuid()
+        .then(() => checkToken())
+        .then(() => getUploadUrl())
+        .then((res) => uploadFiles(res.data.url))
         .then(() => console.log('Done!'))
         .catch((err) => console.error(err));
     }
