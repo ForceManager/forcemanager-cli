@@ -101,5 +101,3 @@ Not working yet.
 
 Copy files to any Server/FTP you can access with https.
 In this case you should set Custom URL in Form config in [ForceManager Setup](https://setup.forcemanager.net/#/app/forms).
-
-[Formms docuemntation](/templates/forms/README.md)

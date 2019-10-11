@@ -74,6 +74,10 @@ Deploy the code of a Fragment to AWS.
 
 - Set GUID if is not alredy set.
 
+## Formms
+
+[Docuemntation](/templates/forms/README.md)
+
 ## 🙌 Contributing
 
 To learn how to setup a development environment and for contribution guidelines, see [CONTRIBUTING.md](/CONTRIBUTING.md).
