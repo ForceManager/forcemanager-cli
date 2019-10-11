@@ -41,6 +41,7 @@ try {
 context['entity'] = devData.entity || '';
 context['entityId'] = devData.entityId || '';
 context['userData'] = devData.userData || userDataTemplate;
+context['formId'] = devData.formId || '';
 
 window.onload = function() {
   document.getElementById('dev-body').style.display = 'flex';
@@ -49,6 +50,7 @@ window.onload = function() {
   document.getElementById('public-key').value = devData.publicKey || '';
   document.getElementById('user-data').innerHTML = JSON.stringify(context.userData);
   document.getElementById('entity-id').value = context.entityId;
+  document.getElementById('form-id').value = context.formId;
   if (context.entity) {
     document.getElementById(`entity-${context.entity}`).checked = true;
   }
@@ -74,9 +76,10 @@ window.onload = function() {
       document.getElementById('widget').outerHTML = '';
       document.getElementById('page').outerHTML = '';
       domEl = 'form-content';
-      context['form'] = {
+      context = {
+        ...context,
         entityForm: null,
-        mode: 'creation',
+        mode: context.formId ? 'edition' : 'creation',
         isReadonly: false,
         idState: -1,
         endState: 0,
@@ -97,7 +100,7 @@ window.onload = function() {
     window.FmBridgeBackend.setContext(context);
     window.FmBridgeBackend.init();
     window.FmBridgeBackend.loadFragment(name, 'http://localhost:{{port}}', domEl);
-  } else if (!context.entity) {
+  } else if (!options) {
     console.log('No entity set');
     document.getElementById('label-entity').classList.add('error');
     panel.classList.toggle('show');
@@ -248,6 +251,14 @@ window.fmDevFunctions = {
     document.getElementById('signature').classList.remove('show');
   },
 
+  showDatePicker(date, dateMax, dateMin) {
+    document.getElementById('date-picker').classList.add('show');
+  },
+
+  hideDatePicker() {
+    document.getElementById('date-picker').classList.remove('show');
+  },
+
   expiredDevLoginToken() {
     console.log('expiredDevLoginToken');
     devData.logged = false;
@@ -256,6 +267,18 @@ window.fmDevFunctions = {
     location.reload();
   },
 };
+
+function datePicker(res) {
+  if (res === 'OK') {
+    window.dispatchEvent(
+      new CustomEvent('openDatePicker', {
+        detail: { response: new Date().getTime() },
+      }),
+    );
+  } else {
+    window.fmDevFunctions.hideDatePicker();
+  }
+}
 
 function confirmDialog(res) {
   window.dispatchEvent(
@@ -266,6 +289,7 @@ function confirmDialog(res) {
 }
 
 function signature(res) {
+  console.log('signature', res);
   if (res === 'OK') {
     window.dispatchEvent(
       new CustomEvent('signatureResponse', {
@@ -277,6 +301,6 @@ function signature(res) {
       }),
     );
   } else {
-    document.getElementById('signature').classList.remove('show');
+    window.fmDevFunctions.hideSignatureView();
   }
 }

@@ -6,9 +6,9 @@ Fragments are isolated parts of code embedded in ForceManager divided into 3 typ
 
 ## ⭐️ Features
 
--   Create new Fragments.
--   Start Fragments in development mode.
--   Deploy fragments to sandbox enviroment.
+- Create new Fragments.
+- Start Fragments in development mode.
+- Deploy fragments to sandbox enviroment.
 
 ## 📦 Installation
 
@@ -33,49 +33,46 @@ You can create new project o convert existing ones.
 
 #### 1) Create new project
 
-* Go to the folder where you want to create the project.
+- Go to the folder where you want to create the project.
 
-* `fm-cli create <new-project-name>`
+- `fm-cli create <new-project-name>`
 
-* Follow the create assistant steps. A'Hello World' project will be created in the specified <new-project-name> directory.
+- Follow the create assistant steps. A'Hello World' project will be created in the specified <new-project-name> directory.
 
-* `cd <new-project-name>`
+- `cd <new-project-name>`
 
-* `yarn istall` or `npm istall`
+- `yarn istall` or `npm istall`
 
 #### 2) Convert existing project
 
-* Go to the folder where you have the project.
+- Go to the folder where you have the project.
 
-* `fm-cli create <existing-directory-project-name>`
+- `fm-cli create <existing-directory-project-name>`
 
-* Follow the create assistant steps
+- Follow the create assistant steps
 
+### Start a dev environment
 
-### Start a dev server
-
-To start a server with an iframe where your Fragment is going to be embedded.
+Opens a web page with an iframe where your Fragment is going to be embedded.
 The default port of localhost that is going to be loaded inside the iframe is 3000. You can change this port specifying a different number.
 
-* Go to the folder of the project you want to load.
+- Go to the folder of the project you want to load.
 
-* Run your project in any port of localhost (`yarn start`, `npm ng serve`, ...).
+- Run your project in any port of localhost (`yarn start`, `npm ng serve`, ...).
 
-* `fm-cli start` or `fm-cli start 4000`
+- `fm-cli start` or `fm-cli start 4000`
 
-* Configure Options and set Private and Public Key to API login.
-
+- Configure Options and set Private and Public Key to API login.
 
 ### Deploy Fragment
 
 Deploy the code of a Fragment to AWS.
 
-* Go to the folder of the project you want to deploy.
+- Go to the folder of the project you want to deploy.
 
-* `fm-cli deploy`
+- `fm-cli deploy`
 
-* Set GUID if is not alredy set.
-
+- Set GUID if is not alredy set.
 
 ## 🙌 Contributing
 

@@ -1,123 +1,114 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <meta charset="utf-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <title>ForceManager Dev</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <link
-      href="https://fonts.googleapis.com/css?family=Roboto:400"
-      rel="stylesheet"
-      type="text/css"
-    />
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body id="dev-body" class="fragment-{{ type }}" style="display: none">
-    <div class="header">
-      <h1 class="title">ForceManager Fragment Development - {{ widgetType }} {{ type }}</h1>
-      <div class="config-icon" onClick="toggleConfig()">
-        <img
-          src="https://fmassets.s3.amazonaws.com/sfmCustomWidgets/pro/1.0.0m/trafficLight/img/cog_icon.png"
-        />
-      </div>
+
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>ForceManager Dev</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400" rel="stylesheet" type="text/css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+
+<body id="dev-body" class="fragment-{{ type }}" style="display: none">
+  <div class="header">
+    <div class="config-icon" onClick="toggleConfig()">
+      <img src="https://fmassets.s3.amazonaws.com/sfmCustomWidgets/pro/1.0.0m/trafficLight/img/cog_icon.png" />
     </div>
-    <div class="config-panel" id="config-panel">
-      <div class="config-panel-tabs">
-        <div class="config-panel-tab selected" id="options-tab" onClick="selctTab(event)">
-          Options
-        </div>
-        <div class="config-panel-tab" id="login-tab" onClick="selctTab(event)">Login</div>
+  </div>
+  <div class="config-panel" id="config-panel">
+    <div class="config-panel-tabs">
+      <div class="config-panel-tab selected" id="options-tab" onClick="selctTab(event)">
+        Options
       </div>
-      <div class="config-panel-tab-content selected" id="options-tab-content">
-        <div class="config-panel-item config-panel-item-widget">
-          <label>Title</label>
-          <input type="text" id="input-title" name="title" />
-        </div>
-        <div class="config-panel-item config-panel-item-widget">
-          <label>User</label>
-          <textarea type="text" id="user-data" name="user-data"></textarea>
-        </div>
-        <div class="config-panel-item config-panel-item-widget">
-          <label class="label-title" id="label-entity">Entity</label>
-          <form class="radio-buttons">
-            <div class="form-item">
-              <input type="radio" id="entity-2" name="entity" value="2" /><label>Company</label>
-            </div>
-            <div class="form-item">
-              <input type="radio" id="entity-1" name="entity" value="1" /><label>Opportunity</label>
-            </div>
-          </form>
-        </div>
-        <div class="config-panel-item config-panel-item-widget config-panel-item-form">
-          <label>Entity ID</label>
-          <input type="text" id="entity-id" name="entity-id" />
-        </div>
-        <div class="config-panel-item  config-panel-item-widget">
-          <label class="label-title">Columns</label>
-          <form class="radio-buttons">
-            <div class="form-item">
-              <input type="radio" id="columns-1" name="column" value="1" checked /><label
-                >1 (50%)</label
-              >
-            </div>
-            <div class="form-item">
-              <input type="radio" id="columns-2" name="column" value="2" /><label>2 (100%)</label>
-            </div>
-          </form>
-        </div>
-        <div class="config-panel-item  config-panel-item-widget">
-          <label class="label-title">Rows</label>
-          <form class="radio-buttons">
-            <div class="form-item">
-              <input type="radio" id="rows-1" name="row" value="1" checked /><label>1</label>
-            </div>
-            <div class="form-item">
-              <input type="radio" id="rows-2" name="row" value="2" /><label>2</label>
-            </div>
-          </form>
-        </div>
-        <div class="config-panel-item">
-          <button type="button" id="save" name="save" onClick="onSave()">Save</button>
-        </div>
+      <div class="config-panel-tab" id="login-tab" onClick="selctTab(event)">Login</div>
+    </div>
+    <div class="config-panel-tab-content selected" id="options-tab-content">
+      <div class="config-panel-item config-panel-item-widget">
+        <label>Title</label>
+        <input type="text" id="input-title" name="title" />
       </div>
-      <div class="config-panel-tab-content" id="login-tab-content">
-        <form id="login" method="post">
-          <div class="config-panel-item">
-            <label>Public Key</label>
-            <input type="text" id="public-key" name="public-key" autocomplete="username email" />
+      <div class="config-panel-item config-panel-item-widget">
+        <label>User</label>
+        <textarea type="text" id="user-data" name="user-data"></textarea>
+      </div>
+      <div class="config-panel-item config-panel-item-widget">
+        <label class="label-title" id="label-entity">Entity</label>
+        <form class="radio-buttons">
+          <div class="form-item">
+            <input type="radio" id="entity-2" name="entity" value="2" /><label>Company</label>
           </div>
-          <div class="config-panel-item">
-            <label>Private Key</label>
-            <input
-              type="password"
-              id="private-key"
-              name="private-key"
-              autocomplete="new-password"
-            />
-          </div>
-          <div class="config-panel-item">
-            <input type="submit" class="button" value="Login" />
+          <div class="form-item">
+            <input type="radio" id="entity-1" name="entity" value="1" /><label>Opportunity</label>
           </div>
         </form>
       </div>
-    </div>
-    <div id="widget" class="widget">
-      <div class="widget-header">
-        <div class="widget-title" id="widget-title"></div>
+      <div class="config-panel-item config-panel-item-widget config-panel-item-form">
+        <label>Entity ID</label>
+        <input type="text" id="entity-id" name="entity-id" />
       </div>
-      <div class="widget-content" id="widget-content"></div>
-    </div>
-    <div id="form" class="form">
-      <div class="form-header">
-        <div id="form-title" class="form-title">Creación formulario</div>
+      <div class="config-panel-item config-panel-item-widget config-panel-item-form">
+        <label>Form ID</label>
+        <input type="text" id="form-id" name="form-id" />
       </div>
-      <div id="form-camera-images" class="form-camera-images">
-        <div class="form-camera-images-header">
-          <div class="form-camera-images-header-title">IMÁGENES</div>
-          <div class="form-camera-images-header-collapse" onClick="toggleImages()"><</div>
+      <div class="config-panel-item  config-panel-item-widget">
+        <label class="label-title">Columns</label>
+        <form class="radio-buttons">
+          <div class="form-item">
+            <input type="radio" id="columns-1" name="column" value="1" checked /><label>1 (50%)</label>
+          </div>
+          <div class="form-item">
+            <input type="radio" id="columns-2" name="column" value="2" /><label>2 (100%)</label>
+          </div>
+        </form>
+      </div>
+      <div class="config-panel-item  config-panel-item-widget">
+        <label class="label-title">Rows</label>
+        <form class="radio-buttons">
+          <div class="form-item">
+            <input type="radio" id="rows-1" name="row" value="1" checked /><label>1</label>
+          </div>
+          <div class="form-item">
+            <input type="radio" id="rows-2" name="row" value="2" /><label>2</label>
+          </div>
+        </form>
+      </div>
+      <div class="config-panel-item">
+        <button type="button" id="save" name="save" onClick="onSave()">Save</button>
+      </div>
+    </div>
+    <div class="config-panel-tab-content" id="login-tab-content">
+      <form id="login" method="post">
+        <div class="config-panel-item">
+          <label>Public Key</label>
+          <input type="text" id="public-key" name="public-key" autocomplete="username email" />
         </div>
-        <div class="form-camera">
-          <div class="form-camera-icon"></div>
+        <div class="config-panel-item">
+          <label>Private Key</label>
+          <input type="password" id="private-key" name="private-key" autocomplete="new-password" />
+        </div>
+        <div class="config-panel-item">
+          <input type="submit" class="button" value="Login" />
+        </div>
+      </form>
+    </div>
+  </div>
+  <div id="widget" class="widget">
+    <div class="widget-header">
+      <div class="widget-title" id="widget-title"></div>
+    </div>
+    <div class="widget-content" id="widget-content"></div>
+  </div>
+  <div id="form" class="form">
+    <div class="form-header">
+      <div id="form-title" class="form-title">Creación formulario</div>
+    </div>
+    <div id="form-camera-images" class="form-camera-images">
+      <div class="form-camera-images-header">
+        <div class="form-camera-images-header-title">IMÁGENES</div>
+        <div class="form-camera-images-header-collapse" onClick="toggleImages()">
+          <</div> </div> <div class="form-camera">
+            <div class="form-camera-icon"></div>
         </div>
         <div class="form-images"></div>
       </div>
@@ -133,16 +124,8 @@
       <div class="confirm-dialog-box">
         <div id="confirm-dialog-msg" class="confirm-dialog-msg"></div>
         <div class="confirm-dialog-buttons">
-          <div
-            id="confirm-dialog-button-ko"
-            class="confirm-dialog-button"
-            onClick="confirmDialog('KO')"
-          ></div>
-          <div
-            id="confirm-dialog-button-ok"
-            class="confirm-dialog-button"
-            onClick="confirmDialog('OK')"
-          ></div>
+          <div id="confirm-dialog-button-ko" class="confirm-dialog-button" onClick="confirmDialog('KO')"></div>
+          <div id="confirm-dialog-button-ok" class="confirm-dialog-button" onClick="confirmDialog('OK')"></div>
         </div>
       </div>
     </div>
@@ -158,16 +141,12 @@
       <div class="date-picker-box">
         <div id="date-picker-msg" class="date-picker-msg"></div>
         <div class="date-picker-buttons">
-          <div
-            id="date-picker-button-ko"
-            class="date-picker-button"
-            onClick="datePicker('KO')"
-          ></div>
-          <div
-            id="date-picker-button-ok"
-            class="date-picker-button"
-            onClick="datePicker('OK')"
-          ></div>
+          <div id="date-picker-button-ko" class="date-picker-button" onClick="datePicker('KO')">
+            Cancelar
+          </div>
+          <div id="date-picker-button-ok" class="date-picker-button" onClick="datePicker('OK')">
+            Aceptar
+          </div>
         </div>
       </div>
     </div>
@@ -186,10 +165,11 @@
       </div>
     </div>
     <!-- <script type="text/javascript" src="http://localhost:5500/lib/fm-bridge-backend.js"></script> -->
-    <script
-      type="text/javascript"
-      src="https://d15abo3q1yyhdy.cloudfront.net/fragments/fm-bridge-backend-0.0.1-beta.6.min.js"
-    ></script>
+    <!-- <script type="text/javascript"
+      src="https://d15abo3q1yyhdy.cloudfront.net/fragments/fm-bridge-backend-0.0.1-beta.6.min.js"></script> -->
+    <script type="text/javascript"
+      src="https://fmfragments.s3.amazonaws.com/bridge/fm-bridge-backend-0.0.1-beta.10.min.js"></script>
     <script type="text/javascript" src="script.js"></script>
-  </body>
+</body>
+
 </html>

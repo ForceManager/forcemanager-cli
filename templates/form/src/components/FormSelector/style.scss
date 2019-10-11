@@ -1,0 +1,18 @@
+.forms-select {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  padding: 0 20px;
+  >div {
+    width: 100%;
+    max-width: 460px;
+    margin: -100px auto 0;
+  }
+  .HoiPoi__Select__select-1-14 .hoi-poi-select__placeholder {
+    color: #999;
+  }
+  .HoiPoi__Select__formControl-1-7::before {
+    border-bottom: 1px solid #AAA;
+  }
+}

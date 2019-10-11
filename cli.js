@@ -11,6 +11,7 @@ const editJsonFile = require('edit-json-file');
 const open = require('open');
 const mime = require('mime-types');
 const axios = require('axios');
+const archiver = require('archiver');
 
 // require('dotenv').config();
 require('dotenv').config({ path: path.resolve(__dirname, '.env') });
@@ -138,7 +139,7 @@ function create() {
               }
             },
           };
-          settings.root = path.resolve(__dirname, 'template');
+          settings.root = path.resolve(__dirname, 'template', fmConfigData.type);
           if (convert) {
             settings.depth = 0;
             settings.entryType = 'files';
@@ -205,6 +206,8 @@ function deploy() {
       let fmConfig = JSON.parse(fileContent);
       let cfm_user = process.env.CFM_USER;
       let cfm_token = process.env.CFM_TOKEN;
+      const zipFilePath = `${__dirname}/file.zip`;
+      let signedUrl;
 
       checkGuid = () => {
         if (fmConfig.guid) {
@@ -288,19 +291,24 @@ function deploy() {
           });
       };
 
-      getUploadUrl = () => {
-        return axios({
-          method: 'get',
-          // url: `https://be-cfmsta.forcemanager.net/api/fragments/v1/${fmConfig.guid}/upload`,
-          url: `https://be-cfmsta.forcemanager.net/api/widgets/v1/206/upload`,
-          headers: { Authorization: `Bearer ${cfm_token}` },
-          contentType: 'application/json',
-          accept: '*/*',
+      getSignedUrl = () => {
+        return new Promise((resolve, reject) => {
+          axios({
+            method: 'get',
+            url: `https://be-cfmsta.forcemanager.net/api/fragments/v1/${fmConfig.guid}/upload`,
+            headers: { Authorization: `Bearer ${cfm_token}` },
+            contentType: 'application/json',
+            accept: '*/*',
+          })
+            .then((res) => {
+              signedUrl = res.data.url;
+              resolve();
+            })
+            .catch((err) => reject(err));
         });
       };
 
-      uploadFiles = (signedUrl) => {
-        console.log('uploadFiles', signedUrl);
+      zipFiles = () => {
         return new Promise((resolve, reject) => {
           const distFolderPath = path.join(currnetPath, fmConfig.distFolder);
           let settings = {
@@ -308,6 +316,33 @@ function deploy() {
             entryType: 'all',
           };
           let allFiles = [];
+          let output = fs.createWriteStream(zipFilePath);
+          let archive = archiver('zip', {
+            zlib: { level: 9 },
+          });
+
+          output.on('close', function() {
+            console.log('Zip file successfully created. Size: ' + archive.pointer() + ' bytes.');
+          });
+
+          output.on('end', function() {
+            console.log('Data has been drained');
+          });
+
+          archive.on('warning', function(err) {
+            if (err.code === 'ENOENT') {
+              console.warn(err);
+            } else {
+              throw err;
+            }
+          });
+
+          archive.on('error', function(err) {
+            throw err;
+          });
+
+          archive.pipe(output);
+
           readdirp(settings)
             .on('data', function(file) {
               allFiles.push(file);
@@ -322,38 +357,46 @@ function deploy() {
               let promises = [];
               for (const file of allFiles) {
                 if (fs.lstatSync(file.fullPath).isDirectory()) {
+                  archive.directory('subdir/', file.fullPath);
                   continue;
                 }
                 promises.push(
                   fs
                     .readFile(file.fullPath)
-                    .then((fileContent) => {
-                      const options = {
-                        headers: {
-                          'Content-Type': mime.lookup(file.path),
-                        },
-                      };
-                      return axios.put(signedUrl, fileContent, options);
-                    })
-                    .then((res) => {
-                      console.log(res);
-                      // console.log(`Successfully uploaded '${file.fullPath}' in ${data.Location}`);
-                    })
+                    .then((fileContent) => archive.append(fileContent, { name: file.path }))
                     .catch((err) => reject(err)),
                 );
               }
               Promise.all(promises)
+                .then(() => archive.finalize())
                 .then(() => resolve())
                 .catch((err) => reject(err));
             });
         });
       };
 
+      uploadFile = (zipFileContent) => {
+        console.log('Uploading...');
+        const options = {
+          headers: {
+            'Content-Type': 'application/zip',
+          },
+        };
+        return axios.put(signedUrl, zipFileContent, options);
+      };
+
       checkGuid()
         .then(() => checkToken())
-        .then(() => getUploadUrl())
-        .then((res) => uploadFiles(res.data.url))
+        .then(() => zipFiles())
+        .then(() => getSignedUrl())
+        .then(() => fs.readFile(zipFilePath))
+        .then((res) => uploadFile(res))
+        .then(() => fs.remove(zipFilePath))
         .then(() => console.log('Done!'))
+        .catch((err) => {
+          console.error(err);
+          return fs.remove(zipFilePath);
+        })
         .catch((err) => console.error(err));
     }
   });

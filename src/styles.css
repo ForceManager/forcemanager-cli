@@ -4,7 +4,6 @@ body{
     width: 100vw;
     height: 100vh;
     margin: 0;
-    padding-top: 40px;
     font-family: Roboto;
     background-color: #f0f3f5;
     overflow: hidden;
@@ -12,10 +11,9 @@ body{
 .header {
     position: absolute;
     top: 0;
-    width: 100%;
+    right: 0;
+    width: 60px;
     height: 40px;
-    background-color: #fff;
-    border-bottom: 1px solid #eaeaea;
     padding: 10px 0;
     margin: 0;
     box-sizing: border-box;
@@ -39,10 +37,9 @@ body{
 }
 .config-panel{
     position: absolute;
-    top: 40px;
     right: -340px;
     width: 330px;
-    min-height: calc(100vh - 40px);
+    min-height: 100vh;
     box-sizing: border-box;
     border-left: 1px solid #eaeaea;
     box-shadow: #9e9e9e99 -3px 0px 15px 0px;
@@ -199,16 +196,16 @@ label#label-entity.error{
     display: block;
 }
 .widget-col-1{
-    width: 435px;
+    width: 520px;
 }
 .widget-col-2{
     width: 890px;
 }
 .widget-row-1{
-    height: 300px;
+    height: 400px;
 }
 .widget-row-2{
-    height: 620px;
+    height: 600px;
 }
 .widget-header{
     position: relative;
@@ -228,13 +225,13 @@ label#label-entity.error{
     line-height: 20px;
 }
 .widget-content {
-    height: 260px;
-    overflow-y: auto;
+    height: calc(100% - 40px);
+    /* overflow-y: auto; */
     background-color: white;
 }
 .form {
     width: 100%;
-    height: calc(100vh - 40px);
+    height: 100vh;
     overflow: scroll;
     display: none;
 }

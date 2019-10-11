@@ -1,0 +1,21 @@
+.signature {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  .signature-title{
+
+  }
+  .signature-image-container{
+    width: 100%;
+    margin-bottom: 10px;
+    .signature-image{
+      display: table;
+      max-width: 100%;
+      margin: 0 auto;
+    }
+  }
+  .signature-button{
+    align-content: center;
+  }
+}

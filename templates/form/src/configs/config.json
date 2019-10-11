@@ -1,0 +1,589 @@
+{
+  "formSchema": {
+    "standardService": {
+      "title": "Standard Service and After Sales Service Report",
+      "name": "standardService",
+      "id": 1,
+      "schema": [
+        {
+          "title": "General information Start",
+          "name": "generalInformation",
+          "className": "general-info-start",
+          "fields": [
+            {
+              "label": "Customer",
+              "name": "customer",
+              "type": "select",
+              "isReadOnly": true
+            },
+            {
+              "label": "Contact",
+              "name": "contact",
+              "type": "select",
+              "isRequired": true,
+              "isSearchable": false,
+              "attrs": {
+                "isSearchable": false,
+                "relatedEntity": ["contacts", "accounts", "this"],
+                "options": [{ "label": "Other", "value": "other" }]
+              }
+            },
+            {
+              "label": "Contact name",
+              "name": "otherContactName",
+              "type": "text",
+              "isRequired": true,
+              "isVisible": false
+            },
+            {
+              "label": "Contact email",
+              "name": "otherContactEmail",
+              "type": "text",
+              "isRequired": true,
+              "isVisible": false
+            },
+            {
+              "label": "Date from",
+              "name": "dateFrom",
+              "type": "datePicker",
+              "isRequired": true
+            },
+            {
+              "label": "Date to",
+              "name": "dateTo",
+              "type": "datePicker",
+              "isRequired": true,
+              "validation": "biggerThanDateFrom"
+            },
+            {
+              "label": "Service Engineer",
+              "name": "serviceEngineer",
+              "type": "select",
+              "isReadOnly": true
+            },
+            {
+              "label": "Machine type",
+              "name": "machineType",
+              "type": "text",
+              "isRequired": true
+            },
+            {
+              "label": " Serial No. ",
+              "name": "serialNo",
+              "type": "text",
+              "isRequired": true
+            },
+            {
+              "label": "Machine hours",
+              "name": "machineHours",
+              "type": "text",
+              "isRequired": true
+            },
+            {
+              "label": "Depart",
+              "name": "departFromMarchesini",
+              "type": "dateTimePicker",
+              "isRequired": true
+            },
+            {
+              "label": "Arrive to customer",
+              "name": "arriveToCustomer",
+              "type": "dateTimePicker",
+              "isRequired": true,
+              "validation": "biggerThanDepart"
+            }
+          ]
+        },
+        {
+          "title": "Time Allocation Table",
+          "name": "timeAllocationTable",
+          "className": "time-allocation-table",
+          "fields": [
+            {
+              "name": "timeAllocationTable",
+              "type": "multiplier",
+              "buttonLabel": "ADD",
+              "buttonClassName": "time-allocation-add-button",
+              "schema": [
+                {
+                  "name": "timeAllocationTable",
+                  "fields": [
+                    {
+                      "label": "Activity",
+                      "name": "activity",
+                      "type": "select",
+                      "isRequired": true,
+                      "attrs": {
+                        "table": "Z_tbltipoMaterial",
+                        "options": []
+                      }
+                    },
+                    {
+                      "label": "Day",
+                      "name": "day",
+                      "type": "datePicker",
+                      "isRequired": true
+                    },
+                    {
+                      "label": "Hour: From",
+                      "name": "hourFrom",
+                      "type": "timePicker",
+                      "isRequired": true
+                    },
+                    {
+                      "label": "Hour: To",
+                      "name": "hourTo",
+                      "type": "timePicker",
+                      "isRequired": true,
+                      "validation": "biggerThanHourFrom"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Work Performed",
+          "name": "workPerformed",
+          "className": "work-performed",
+          "fields": [
+            {
+              "label": "Status",
+              "name": "status",
+              "type": "checkboxGroup",
+              "validation": "oneOfAll",
+              "attrs": {
+                "options": [
+                  {
+                    "label": "Service incomplete",
+                    "value": "serviceIncomplete"
+                  },
+                  {
+                    "label": "Customer confirmation of the work completed",
+                    "value": "confirmationWorkCompleted"
+                  },
+                  {
+                    "label": "Training and instruction received",
+                    "value": "trainingReceived"
+                  },
+                  {
+                    "label": "Spare requested",
+                    "value": "spareRequested"
+                  },
+                  {
+                    "label": "Modification/Format requested and/or required",
+                    "value": "modificationRequested"
+                  }
+                ]
+              }
+            },
+            {
+              "label": "Description of work performed",
+              "name": "description",
+              "type": "textarea",
+              "isRequired": true
+            },
+            {
+              "label": "Recommendations",
+              "name": "recommendations",
+              "type": "textarea",
+              "isRequired": true
+            }
+          ]
+        },
+        {
+          "name": "photos",
+          "className": "photos",
+          "imagesView": true,
+          "fields": []
+        },
+        {
+          "title": "Signatures",
+          "name": "signatures",
+          "className": "signatures",
+          "fields": [
+            {
+              "label": "Customer’s name",
+              "name": "customerName",
+              "type": "text",
+              "isRequired": true
+            },
+            {
+              "label": "Customer’s signature",
+              "name": "customerSignature",
+              "type": "signature",
+              "isRequired": true
+            },
+            {
+              "label": "Date of the Customer’s signature",
+              "name": "dateCustomerSignature",
+              "type": "text",
+              "isReadOnly": true
+            },
+            {
+              "label": "Service engineer’s signature.",
+              "name": "serviceEngineerSignature",
+              "type": "signature",
+              "isRequired": true
+            },
+            {
+              "label": "Date of the Service engineer’s signature",
+              "name": "dateServiceEngineerSignature",
+              "type": "text",
+              "isReadOnly": true
+            },
+            {
+              "label": "Send email",
+              "name": "sendEmail",
+              "type": "checkbox",
+              "isRequired": true
+            }
+          ]
+        },
+        {
+          "title": "General information End",
+          "name": "generalInformationEnd",
+          "className": "general-info-end",
+          "fields": [
+            {
+              "label": "Depart from customer",
+              "name": "departFromCustomer",
+              "type": "dateTimePicker",
+              "isRequired": true
+            }
+          ]
+        },
+        {
+          "title": "General information End",
+          "name": "generalInformationEnd2",
+          "className": "general-info-end-2",
+          "fields": [
+            {
+              "label": "Arrive",
+              "name": "arriveToMarchesini",
+              "type": "dateTimePicker",
+              "isRequired": true,
+              "validation": "biggerThanEndDepart"
+            }
+          ]
+        }
+      ]
+    },
+    "newMachine": {
+      "title": "New Machine or Line Installation",
+      "name": "newMachine",
+      "id": 2,
+      "schema": [
+        {
+          "title": "General information Start",
+          "name": "generalInformation",
+          "className": "general-info-start",
+          "fields": [
+            {
+              "label": "Customer.",
+              "name": "customer",
+              "type": "select",
+              "isReadOnly": true
+            },
+            {
+              "label": "Contact",
+              "name": "contact",
+              "type": "select",
+              "isRequired": true,
+              "isSearchable": false,
+              "attrs": {
+                "isSearchable": false,
+                "relatedEntity": ["contacts", "accounts", "this"],
+                "options": [{ "label": "Other", "value": "other" }]
+              }
+            },
+            {
+              "label": "Contact name",
+              "name": "otherContactName",
+              "type": "text",
+              "isRequired": true,
+              "isVisible": false
+            },
+            {
+              "label": "Contact email",
+              "name": "otherContactEmail",
+              "type": "text",
+              "isRequired": true,
+              "isVisible": false
+            },
+            {
+              "label": "Date from",
+              "name": "dateFrom",
+              "type": "datePicker",
+              "isRequired": true
+            },
+            {
+              "label": "Date to",
+              "name": "dateTo",
+              "type": "datePicker",
+              "isRequired": true,
+              "validation": "biggerThanDateFrom"
+            },
+            {
+              "label": "Service Engineer",
+              "name": "serviceEngineer",
+              "type": "select",
+              "isReadOnly": true
+            },
+            {
+              "label": "Machine type",
+              "name": "machineType",
+              "type": "text",
+              "isRequired": true
+            },
+            {
+              "label": " Serial No. ",
+              "name": "serialNo",
+              "type": "text",
+              "isRequired": true
+            },
+            {
+              "label": "Machine hours",
+              "name": "machineHours",
+              "type": "text",
+              "isRequired": true
+            },
+            {
+              "label": "Depart",
+              "name": "departFromMarchesini",
+              "type": "dateTimePicker",
+              "isRequired": true
+            },
+            {
+              "label": "Arrive to customer",
+              "name": "arriveToCustomer",
+              "type": "dateTimePicker",
+              "isRequired": true,
+              "validation": "biggerThanDepart"
+            }
+          ]
+        },
+        {
+          "title": "Time Allocation Table",
+          "name": "timeAllocationTable",
+          "className": "time-allocation-table",
+          "fields": [
+            {
+              "name": "timeAllocationTable",
+              "type": "multiplier",
+              "buttonLabel": "ADD",
+              "buttonClassName": "time-allocation-add-button",
+              "schema": [
+                {
+                  "name": "timeAllocationTable",
+                  "fields": [
+                    {
+                      "label": "Activity",
+                      "name": "activity",
+                      "type": "select",
+                      "isRequired": true,
+                      "attrs": {
+                        "table": "Z_tbltipoMaterial",
+                        "options": []
+                      }
+                    },
+                    {
+                      "label": "Day",
+                      "name": "day",
+                      "type": "datePicker",
+                      "isRequired": true
+                    },
+                    {
+                      "label": "Hour: From",
+                      "name": "hourFrom",
+                      "type": "timePicker",
+                      "isRequired": true
+                    },
+                    {
+                      "label": "Hour: To",
+                      "name": "hourTo",
+                      "type": "timePicker",
+                      "isRequired": true,
+                      "validation": "biggerThanHourFrom"
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "title": "Work Performed",
+          "name": "workPerformed",
+          "className": "work-performed",
+          "fields": [
+            {
+              "label": "Status",
+              "name": "status",
+              "type": "checkboxGroup",
+              "validation": "oneOfAll",
+              "attrs": {
+                "options": [
+                  {
+                    "label": "Service incomplete",
+                    "value": "serviceIncomplete"
+                  },
+                  {
+                    "label": "Customer confirmation of the work completed",
+                    "value": "confirmationWorkCompleted"
+                  },
+                  {
+                    "label": "Training and instruction received",
+                    "value": "trainingReceived"
+                  },
+                  {
+                    "label": "Spare requested",
+                    "value": "spareRequested"
+                  },
+                  {
+                    "label": "Modification/Format requested and/or required",
+                    "value": "modificationRequested"
+                  }
+                ]
+              }
+            },
+            {
+              "label": "Description of work performed",
+              "name": "description",
+              "type": "textarea",
+              "isRequired": true
+            },
+            {
+              "label": "Recommendations",
+              "name": "recommendations",
+              "type": "textarea",
+              "isRequired": true
+            }
+          ]
+        },
+        {
+          "name": "photos",
+          "className": "photos",
+          "imagesView": true,
+          "fields": []
+        },
+        {
+          "title": "Signatures",
+          "name": "signatures",
+          "className": "signatures",
+          "fields": [
+            {
+              "label": "Customer’s name",
+              "name": "customerName",
+              "type": "text",
+              "isRequired": true
+            },
+            {
+              "label": "Customer’s signature",
+              "name": "customerSignature",
+              "type": "signature",
+              "isRequired": true
+            },
+            {
+              "label": "Date of the Customer’s signature",
+              "name": "dateCustomerSignature",
+              "type": "text",
+              "isReadOnly": true
+            },
+            {
+              "label": "Service engineer’s signature",
+              "name": "serviceEngineerSignature",
+              "type": "signature",
+              "isRequired": true
+            },
+            {
+              "label": "Date of the Service engineer’s signature",
+              "name": "dateServiceEngineerSignature",
+              "type": "text",
+              "isReadOnly": true
+            },
+            {
+              "label": "Send email",
+              "name": "sendEmail",
+              "type": "checkbox",
+              "isRequired": true
+            }
+          ]
+        },
+        {
+          "title": "General information End",
+          "name": "generalInformationEnd",
+          "className": "general-info-end",
+          "fields": [
+            {
+              "label": "Depart from customer",
+              "name": "departFromCustomer",
+              "type": "dateTimePicker",
+              "isRequired": true
+            }
+          ]
+        },
+        {
+          "title": "General information End",
+          "name": "generalInformationEnd2",
+          "className": "general-info-end-2",
+          "fields": [
+            {
+              "label": "Arrive",
+              "name": "arriveToMarchesini",
+              "type": "dateTimePicker",
+              "isRequired": true,
+              "validation": "biggerThanEndDepart"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "listObject": {
+    "pos11": "selectedForm",
+    "pos12": "",
+    "pos13": "",
+    "pos21": "state",
+    "pos22": "creationDate",
+    "pos23": ""
+  },
+  "detailObject": {
+    "detailTitle": "Detail",
+    "detailValues": [
+      {
+        "type": "title",
+        "titleName": "Form data",
+        "key": "",
+        "value": "",
+        "entityId": "",
+        "entityType": ""
+      },
+      {
+        "type": "text",
+        "titleName": "",
+        "key": "Type",
+        "value": "selectedForm",
+        "entityId": "",
+        "entityType": ""
+      },
+      {
+        "type": "text",
+        "titleName": "",
+        "key": "Creation date",
+        "value": "creationDate",
+        "entityId": "",
+        "entityType": ""
+      },
+      {
+        "type": "text",
+        "titleName": "",
+        "key": "State",
+        "value": "state",
+        "entityId": "",
+        "entityType": ""
+      }
+    ]
+  }
+}

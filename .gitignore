@@ -6,3 +6,4 @@ dist
 npm-debug.log
 dev/*/*/node_modules
 todos.txt
+file.zip
