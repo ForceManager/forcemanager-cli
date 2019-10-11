@@ -74,9 +74,9 @@ Deploy the code of a Fragment to AWS.
 
 - Set GUID if is not alredy set.
 
-## Formms
+## Forms
 
-[Docuemntation](/templates/forms/README.md)
+[Docuemntation](https://github.com/ForceManager/forcemanager-cli/blob/master/templates/form/README.md)
 
 ## 🙌 Contributing
 
