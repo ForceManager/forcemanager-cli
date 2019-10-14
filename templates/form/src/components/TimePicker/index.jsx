@@ -55,9 +55,6 @@ class TimePicker extends PureComponent {
     const { value } = this.state;
     const { readOnly, isReadOnly } = this.props;
 
-    if (!value) {
-      return null;
-    }
     return (
       <MaterialTimePicker
         {...this.props}

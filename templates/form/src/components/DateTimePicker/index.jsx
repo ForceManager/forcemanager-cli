@@ -55,9 +55,6 @@ class DateTimePicker extends PureComponent {
     const { value } = this.state;
     const { readOnly, isReadOnly } = this.props;
 
-    if (!value) {
-      return null;
-    }
     return (
       <MaterialDateTimePicker
         {...this.props}

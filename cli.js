@@ -28,6 +28,8 @@ if (args[0] == 'create') {
   deploy();
 } else if (args[0] === 'start') {
   start();
+} else {
+  console.log('No arguments found. Please use create, start or deploy.');
 }
 
 function slugify(str) {
