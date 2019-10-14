@@ -139,7 +139,7 @@ function create() {
               }
             },
           };
-          settings.root = path.resolve(__dirname, 'template', fmConfigData.type);
+          settings.root = path.resolve(__dirname, 'templates', fmConfigData.type);
           if (convert) {
             settings.depth = 0;
             settings.entryType = 'files';
