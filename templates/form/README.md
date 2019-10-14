@@ -14,7 +14,7 @@
 ### 3) Install ForceManager CLI
 
 ```
-yarn add global forcemanager-cli
+yarn global add forcemanager-cli
 ```
 
 ### 4) Create new project

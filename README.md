@@ -15,7 +15,7 @@ Fragments are isolated parts of code embedded in ForceManager divided into 3 typ
 With yarn (recommended):
 
 ```
-yarn add global forcemanager-cli
+yarn global add forcemanager-cli
 ```
 
 With npm:
