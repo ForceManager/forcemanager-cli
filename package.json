@@ -9,7 +9,7 @@
   "license": "MIT",
   "author": "SPT <sergi.palau@forcemanager.net>",
   "bin": {
-    "fm-cli": "./cli.js"
+    "fm": "./cli.js"
   },
   "repository": {
     "type": "git",
@@ -21,6 +21,7 @@
     "axios": "^0.18.0",
     "dotenv": "^7.0.0",
     "edit-json-file": "^1.2.1",
+    "envfile": "^3.0.0",
     "fs-extra": "^7.0.0",
     "inquirer": "^6.1.0",
     "mime-types": "^2.1.22",
@@ -28,6 +29,14 @@
     "open": "^6.0.0",
     "path": "^0.12.7",
     "readdirp": "^2.1.0"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.0.3",
+    "eslint": "^5.0.1",
+    "eslint-config-prettier": "^6.4.0",
+    "eslint-loader": "^2.0.0",
+    "eslint-plugin-prettier": "^3.1.1",
+    "prettier": "^1.18.2"
   },
   "private": false
 }

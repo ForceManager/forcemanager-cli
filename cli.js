@@ -12,9 +12,7 @@ const open = require('open');
 const mime = require('mime-types');
 const axios = require('axios');
 const archiver = require('archiver');
-
-// require('dotenv').config();
-require('dotenv').config({ path: path.resolve(__dirname, '.env') });
+const envfile = require('envfile');
 
 console.log(
   '\x1b[33m',
@@ -22,18 +20,26 @@ console.log(
 );
 console.log('\x1b[37m', '');
 
-if (args[0] == 'create') {
+if (args[0] === 'create') {
+  console.log('FM Create\n');
   create();
 } else if (args[0] === 'deploy') {
+  console.log('FM Deploy\n');
   deploy();
 } else if (args[0] === 'start') {
   start();
+} else if (args[0] === 'set_public_url') {
+  console.log('FM Pre-build\n');
+  setPublicUrl(false);
+} else if (args[0] === 'set_public_url_sandbox') {
+  console.log('FM Pre-build\n');
+  setPublicUrl(true);
 } else {
   console.log('No arguments found. Please use create, start or deploy.');
 }
 
 function slugify(str) {
-  var map = {
+  const map = {
     '-': ' ',
     '-': '_',
     a: 'á|à|ã|â|À|Á|Ã|Â',
@@ -47,7 +53,7 @@ function slugify(str) {
 
   str = str.toLowerCase();
 
-  for (var pattern in map) {
+  for (const pattern in map) {
     str = str.replace(new RegExp(map[pattern], 'g'), pattern);
   }
 
@@ -219,7 +225,7 @@ function deploy() {
             .prompt([
               {
                 name: 'guid',
-                ttype: 'input',
+                type: 'input',
                 message: 'Enter the GUID',
               },
             ])
@@ -459,4 +465,54 @@ function start() {
     .catch((err) => {
       console.log('No existe un proyecto válido en esta ubicación');
     });
+}
+
+function setPublicUrl(sandbox) {
+  let fmConfig;
+  let publicUrl;
+  const sourcePath = path.resolve(currnetPath, '.env');
+  fs.readJson(path.resolve(currnetPath, 'fmConfig.json'))
+    .then((res) => {
+      fmConfig = res;
+      const guidKey = sandbox ? 'sandboxGuid' : 'guid';
+      return getGuid(fmConfig, guidKey);
+    })
+    .then((res) => {
+      publicUrl = `/code/${res}`;
+      return fs.pathExists(sourcePath);
+    })
+    .then((exists) => {
+      const parsedEnvFile = exists ? envfile.parseFileSync(sourcePath) : {};
+      return Promise.resolve(parsedEnvFile);
+    })
+    .then((parsedEnvFile) => {
+      parsedEnvFile.PUBLIC_URL = publicUrl;
+      return fs.writeFile(sourcePath, envfile.stringifySync(parsedEnvFile));
+    })
+    .catch((err) => {
+      console.log(err);
+    });
+}
+
+function getGuid(fmConfig, guidKey) {
+  if (fmConfig[guidKey]) {
+    return Promise.resolve(fmConfig[guidKey]);
+  } else {
+    return inquirer
+      .prompt([
+        {
+          name: 'guid',
+          type: 'input',
+          message: `Enter the ${guidKey === 'sandboxGuid' ? 'sandbox ' : ''}GUID`,
+        },
+      ])
+      .then((answers) => {
+        const fmConfigEdit = editJsonFile(path.resolve(currnetPath, 'fmConfig.json'));
+        fmConfigEdit.set(guidKey, answers.guid);
+        fmConfigEdit.save();
+        fmConfig[guidKey] = answers.guid;
+        return answers.guid;
+      })
+      .catch((err) => console.error(err));
+  }
 }

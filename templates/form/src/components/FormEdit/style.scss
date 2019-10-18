@@ -13,7 +13,7 @@
       height: 100%;
       width: 100%;
       > .form-page {
-        overflow: scroll;
+        overflow-y: scroll;
         height: calc(100% - 40px);
         position: initial;
         margin: 40px 0;
