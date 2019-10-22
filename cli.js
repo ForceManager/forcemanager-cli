@@ -474,7 +474,7 @@ function setPublicUrl(sandbox) {
   fs.readJson(path.resolve(currnetPath, 'fmConfig.json'))
     .then((res) => {
       fmConfig = res;
-      const guidKey = sandbox ? 'sandboxGuid' : 'guid';
+      const guidKey = sandbox ? 'guidSandbox' : 'guid';
       return getGuid(fmConfig, guidKey);
     })
     .then((res) => {
@@ -503,7 +503,7 @@ function getGuid(fmConfig, guidKey) {
         {
           name: 'guid',
           type: 'input',
-          message: `Enter the ${guidKey === 'sandboxGuid' ? 'sandbox ' : ''}GUID`,
+          message: `Enter the ${guidKey === 'guidSandbox' ? 'sandbox ' : ''}GUID`,
         },
       ])
       .then((answers) => {

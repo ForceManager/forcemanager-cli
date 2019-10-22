@@ -88,6 +88,8 @@ body{
 .config-panel-tab.selected {
     color: #5f656b;
     border-bottom: solid 1px #8c9fb1;
+    overflow-y: scroll;
+    max-height: calc(100vh - 80px);
 }
 .config-panel-tab-content{
     padding: 30px;
