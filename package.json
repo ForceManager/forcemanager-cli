@@ -1,6 +1,6 @@
 {
   "name": "forcemanager-cli",
-  "version": "0.0.1-beta.10",
+  "version": "0.0.1-beta.11",
   "description": "ForceManager CLI",
   "homepage": "https://github.com/ForceManager/forcemanager-cli",
   "bugs": {
@@ -20,6 +20,7 @@
     "aws-sdk": "^2.435.0",
     "axios": "^0.18.0",
     "dotenv": "^7.0.0",
+    "download-git-repo": "^3.0.2",
     "edit-json-file": "^1.2.1",
     "envfile": "^3.0.0",
     "fs-extra": "^7.0.0",

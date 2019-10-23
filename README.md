@@ -35,7 +35,7 @@ You can create new project o convert existing ones.
 
 - Go to the folder where you want to create the project.
 
-- `fm-cli create <new-project-name>`
+- `fm create <new-project-name>`
 
 - Follow the create assistant steps. A'Hello World' project will be created in the specified <new-project-name> directory.
 
@@ -47,7 +47,7 @@ You can create new project o convert existing ones.
 
 - Go to the folder where you have the project.
 
-- `fm-cli create <existing-directory-project-name>`
+- `fm create <existing-directory-project-name>`
 
 - Follow the create assistant steps
 
@@ -60,7 +60,7 @@ The default port of localhost that is going to be loaded inside the iframe is 30
 
 - Run your project in any port of localhost (`yarn start`, `npm ng serve`, ...).
 
-- `fm-cli start` or `fm-cli start 4000`
+- `fm start` or `fm start 4000`
 
 - Configure Options and set Private and Public Key to API login.
 
@@ -70,7 +70,7 @@ Deploy the code of a Fragment to AWS.
 
 - Go to the folder of the project you want to deploy.
 
-- `fm-cli deploy`
+- `fm deploy`
 
 - Set GUID if is not alredy set.
 

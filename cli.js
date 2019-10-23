@@ -6,13 +6,12 @@ const fs = require('fs-extra');
 const path = require('path');
 const readdirp = require('readdirp');
 const Mustache = require('mustache');
-const AWS = require('aws-sdk');
 const editJsonFile = require('edit-json-file');
 const open = require('open');
-const mime = require('mime-types');
 const axios = require('axios');
 const archiver = require('archiver');
 const envfile = require('envfile');
+const download = require('download-git-repo');
 
 console.log(
   '\x1b[33m',
@@ -149,59 +148,53 @@ function create() {
           };
           settings.root = path.resolve(__dirname, 'templates', fmConfigData.type);
           if (convert) {
-            settings.depth = 0;
-            settings.entryType = 'files';
-            settings.fileFilter = ['fmConfig.json.mustache'];
+            createFmConfig();
+          } else {
+            copyFiles();
           }
-          readdirp(settings)
-            .on('data', (file) => {
-              allFiles.push(file);
-            })
-            .on('warn', (warn) => {
-              console.warn('Warn: ', warn);
-            })
-            .on('error', (err) => {
-              console.error('error: ', err);
-            })
-            .on('end', () => {
-              copyFiles();
-            });
         })
         .catch((err) => console.error(err));
     }
 
-    function copyFiles() {
-      fs.mkdirp(path.resolve(currnetPath, fmConfigData.name))
-        .then(() => {
-          for (const file of allFiles) {
-            if (fs.lstatSync(file.fullPath).isDirectory()) {
-              fs.mkdirp(path.resolve(currnetPath, fmConfigData.name, file.path), (err) => {
-                if (err) console.error(err);
-              });
-              continue;
-            }
-            fs.readFile(file.fullPath, 'utf8', (error, fileContent) => {
-              if (error) {
-                throw error;
-              }
-              let outputfileContent = fileContent;
-              if (file.name.split('.').pop() === 'mustache') {
-                outputfileContent = Mustache.render(fileContent, fmConfigData);
-              }
-              fs.writeFile(
-                path.resolve(currnetPath, fmConfigData.name, file.path.replace('.mustache', '')),
-                outputfileContent,
-                (err) => {
-                  if (err) {
-                    return console.error(err);
-                  }
-                },
-              );
-            });
-          }
+    function createFmConfig() {
+      fs.writeJson(path.join(currnetPath, fmConfigData.name, 'fmConfig.json'), fmConfigData)
+        .then((res) => {
           console.log('Done!');
         })
-        .catch((err) => console.error(err));
+        .catch((err) => console.warn(err));
+    }
+
+    function copyFiles() {
+      download(`ForceManager/fm-${fmConfigData.type}-template`, fmConfigData.name, function(err) {
+        if (err) {
+          console.warn('Error downloading template.');
+        } else {
+          Promise.all([
+            setProjectName(
+              path.join(currnetPath, fmConfigData.name, 'fmConfig.json'),
+              fmConfigData.name,
+            ),
+            setProjectName(
+              path.join(currnetPath, fmConfigData.name, 'package.json'),
+              fmConfigData.name,
+            ),
+          ])
+            .then((res) => {
+              console.log('Done!');
+            })
+            .catch((err) => console.warn(err));
+        }
+      });
+    }
+
+    function setProjectName(filePath) {
+      return fs
+        .readJson(filePath)
+        .then((jsonFile) => {
+          jsonFile.name = fmConfigData.name;
+          return fs.writeJson(filePath, jsonFile);
+        })
+        .catch((err) => console.warn(err));
     }
   }
 }
