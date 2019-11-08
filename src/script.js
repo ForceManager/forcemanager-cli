@@ -79,6 +79,7 @@ window.onload = function() {
       context = {
         ...context,
         entityForm: null,
+        entity: 2,
         mode: context.formId ? 'edition' : 'creation',
         isReadonly: false,
         idState: -1,
@@ -164,6 +165,7 @@ function onSave() {
   }
   devData.title = document.getElementById('input-title').value;
   devData.entityId = document.getElementById('entity-id').value;
+  devData.formId = document.getElementById('form-id').value;
   devData.userData = JSON.parse(document.getElementById('user-data').innerHTML);
   fmDevData[name] = devData;
   localStorage.setItem('fmDevData', JSON.stringify(fmDevData));

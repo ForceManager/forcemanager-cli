@@ -490,3 +490,13 @@ label#label-entity.error{
 .fragment-form .config-panel-item-form {
     display: block;
 }
+
+.fragment-form .form-header{
+   position: fixed;
+   width: 100%;
+   opacity: 0;
+   transition: .3s;
+}
+.fragment-form .form-header:hover{
+    opacity: 1;
+ }
