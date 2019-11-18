@@ -76,7 +76,7 @@ Deploy the code of a Fragment to AWS.
 
 ## Widgets
 
-[Docuemntation](https://github.com/ForceManager/fm-widget-template/blob/master/widget.md)
+[Docuemntation](https://github.com/ForceManager/fm-widget-template/blob/master/widgets.md)
 
 ## Forms
 
