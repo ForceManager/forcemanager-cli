@@ -76,11 +76,11 @@ Deploy the code of a Fragment to AWS.
 
 ## Widgets
 
-[Docuemntation](https://github.com/ForceManager/fm-widget-template/blob/master/forms.md)
+[Docuemntation](https://github.com/ForceManager/fm-widget-template/blob/master/widget.md)
 
 ## Forms
 
-[Docuemntation](https://github.com/ForceManager/fm-form-template/blob/master/widget.md)
+[Docuemntation](https://github.com/ForceManager/fm-form-template/blob/master/forms.md)
 
 ## 🙌 Contributing
 
