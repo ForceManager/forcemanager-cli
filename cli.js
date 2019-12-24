@@ -8,7 +8,7 @@ const readdirp = require('readdirp');
 const Mustache = require('mustache');
 const editJsonFile = require('edit-json-file');
 const open = require('open');
-const mime = require('mime-types');
+const archiver = require('archiver');
 const axios = require('axios');
 const envfile = require('envfile');
 const download = require('download-git-repo');
@@ -24,7 +24,10 @@ if (args[0] === 'create') {
   create();
 } else if (args[0] === 'deploy') {
   console.log('FM Deploy\n');
-  deploy();
+  deploy(false);
+} else if (args[0] === 'deploy_sandbox') {
+  console.log('FM Deploy\n');
+  deploy(true);
 } else if (args[0] === 'start') {
   start();
 } else if (args[0] === 'set_public_url') {
@@ -103,7 +106,7 @@ function create() {
             getDetails(true);
           }
         })
-        .catch((err) => console.warn(err));
+        .catch(console.error);
     }
 
     function getDetails(convert) {
@@ -153,7 +156,7 @@ function create() {
             copyFiles();
           }
         })
-        .catch((err) => console.error(err));
+        .catch(console.error);
     }
 
     function createFmConfig() {
@@ -161,7 +164,7 @@ function create() {
         .then((res) => {
           console.log('Done!');
         })
-        .catch((err) => console.warn(err));
+        .catch(console.error);
     }
 
     function copyFiles() {
@@ -182,7 +185,7 @@ function create() {
             .then((res) => {
               console.log('Done!');
             })
-            .catch((err) => console.warn(err));
+            .catch(console.error);
         }
       });
     }
@@ -194,12 +197,12 @@ function create() {
           jsonFile.name = fmConfigData.name;
           return fs.writeJson(filePath, jsonFile);
         })
-        .catch((err) => console.warn(err));
+        .catch(console.error);
     }
   }
 }
 
-function deploy() {
+function deploy(sandbox) {
   require('dotenv').config({ path: path.resolve(__dirname, '.env') });
   fs.readFile(path.resolve(currnetPath, 'fmConfig.json'), 'utf8', (error, fileContent) => {
     if (error) {
@@ -208,26 +211,39 @@ function deploy() {
       let fmConfig = JSON.parse(fileContent);
       let cfm_user = process.env.CFM_USER;
       let cfm_token = process.env.CFM_TOKEN;
+      let bridgeVersion;
+      let signedUrl;
+      const zipFilePath = `${__dirname}/file.zip`;
+      const guidKey = sandbox ? 'guidSandbox' : 'guid';
+      const implementationKey = sandbox ? 'implementationIdSandbox' : 'implementationId';
 
-      checkGuid = () => {
-        if (fmConfig.guid) {
+      checkGuidAndImpId = () => {
+        if (fmConfig[guidKey] && fmConfig[implementationKey]) {
           return Promise.resolve();
         } else {
           return inquirer
             .prompt([
               {
+                name: 'implementationId',
+                type: 'input',
+                message: 'Enter implementation Id',
+                default: fmConfig[implementationKey] || null,
+              },
+              {
                 name: 'guid',
                 type: 'input',
-                message: 'Enter the GUID',
+                message: 'Enter GUID',
+                default: fmConfig[guidKey] || null,
               },
             ])
             .then((answers) => {
               let fmConfigEdit = editJsonFile(path.resolve(currnetPath, 'fmConfig.json'));
-              fmConfigEdit.set('guid', answers.guid);
+              fmConfigEdit.set(guidKey, answers.guid);
+              fmConfigEdit.set(implementationKey, answers.implementationId);
               fmConfigEdit.save();
               fmConfig.guid = answers.guid;
             })
-            .catch((err) => console.error(err));
+            .catch(console.error);
         }
       };
 
@@ -237,66 +253,123 @@ function deploy() {
         } else {
           return login()
             .then((res) => fs.writeFile(res.envFilepath, res.envFileContent))
-            .catch((err) => console.error('checkToken error'));
+            .catch((err) => console.error('Check token error'));
         }
       };
 
       login = () => {
-        return inquirer
-          .prompt([
-            {
-              name: 'username',
-              type: 'input',
-              message: 'Email:',
-              default: cfm_user,
-            },
-            {
-              name: 'password',
-              type: 'password',
-              message: 'Password:',
-            },
-          ])
-          .then((answers) => {
-            cfm_user = answers.username;
-            return axios({
-              method: 'post',
-              url: 'https://be-cfmsta.forcemanager.net/api/authenticate/v1/login',
-              data: { username: answers.username, password: answers.password },
-              timeout: 30000,
-              withCredentials: false,
-              maxContentLength: 128 * 1024 * 1024,
-              dataType: 'json',
-              contentType: 'application/json',
-              accept: '*/*',
+        return new Promise((resolve, reject) => {
+          inquirer
+            .prompt([
+              {
+                name: 'username',
+                type: 'input',
+                message: 'Email:',
+                default: cfm_user,
+              },
+              {
+                name: 'password',
+                type: 'password',
+                message: 'Password:',
+              },
+            ])
+            .then((answers) => {
+              cfm_user = answers.username;
+              return axios({
+                method: 'post',
+                url: 'https://be-cfmpre.forcemanager.net/api/authenticate/v1/login',
+                data: { username: answers.username, password: answers.password },
+                timeout: 30000,
+                withCredentials: false,
+                maxContentLength: 128 * 1024 * 1024,
+                dataType: 'json',
+                contentType: 'application/json',
+                accept: '*/*',
+              });
+            })
+            .then((res) => {
+              cfm_token = res.data.token;
+              let envFilepath = path.resolve(__dirname, '.env');
+              let envFileContent = `CFM_USER=${cfm_user}\nCFM_TOKEN=${cfm_token}`;
+              fs.writeFile(envFilepath, envFileContent)
+                .then(resolve)
+                .catch(reject);
+            })
+            .catch((err) => {
+              if (err.response && err.response.status === 400) {
+                console.log('Wrong user or password');
+                return login();
+              } else if (err.response && err.response.status === 401) {
+                console.log('Expired token');
+                cfm_token = '';
+                return login();
+              } else {
+                console.error(err);
+                reject();
+              }
             });
-          })
-          .then((res) => {
-            cfm_token = res.data.token;
-            let envFilepath = path.resolve(__dirname, '.env');
-            let envFileContent = `USER=${cfm_user}\nCFM_TOKEN=${cfm_token}`;
-            return fs.writeFile(envFilepath, envFileContent);
-          })
-          .catch((err) => {
-            if (err.response && err.response.status === 400) {
-              console.log('Wrong user or password');
-              return login();
-            } else if (err.response && err.response.status === 401) {
-              console.log('Expired token');
-              cfm_token = undefined;
-              return login();
-            } else {
-              console.error(err);
-            }
-          });
+        });
       };
 
-      readFiles = () => {
+      getSignedUrl = () => {
+        console.log('Getting upload signed URL...');
         return new Promise((resolve, reject) => {
-          let allFiles = [];
+          return axios({
+            method: 'get',
+            url: `https://be-cfmpre.forcemanager.net/api/fragments/v1/${fmConfig[guidKey]}/upload`,
+            headers: { Authorization: `Bearer ${cfm_token}` },
+            contentType: 'application/json',
+            accept: '*/*',
+          })
+            .then((res) => {
+              signedUrl = res.data.url;
+              resolve();
+            })
+            .catch((err) => {
+              console.error('Get upload URL error:', err.response.data.error);
+              reject();
+            });
+        });
+      };
+
+      zipFiles = () => {
+        console.log('Creating Zip file...');
+        return new Promise((resolve, reject) => {
+          const distFolderPath = path.join(currnetPath, fmConfig.distFolder);
           let settings = {
-            root: path.join(currnetPath, fmConfig.distFolder),
+            root: distFolderPath,
             entryType: 'all',
           };
+          let allFiles = [];
+          let output = fs.createWriteStream(zipFilePath);
+          let archive = archiver('zip', {
+            zlib: { level: 9 },
+          });
+          const cacheManifestFilepath = path.resolve(currnetPath, 'build', 'cache.manifest');
+          let cacheManifestContent = 'CACHE MANIFEST\n';
+
+          output.on('close', function() {
+            console.log('Zip file successfully created. Size: ' + archive.pointer() + ' bytes.');
+          });
+
+          output.on('end', function() {
+            console.log('Data has been drained');
+          });
+
+          archive.on('warning', function(err) {
+            if (err.code === 'ENOENT') {
+              console.warn(err);
+            } else {
+              throw err;
+            }
+          });
+
+          archive.on('error', function(err) {
+            throw err;
+          });
+
+          archive.pipe(output);
+
           readdirp(settings)
             .on('data', function(file) {
               allFiles.push(file);
@@ -308,64 +381,111 @@ function deploy() {
               reject(err);
             })
             .on('end', function() {
-              resolve(allFiles);
+              let promises = [];
+              for (const file of allFiles) {
+                if (fs.lstatSync(file.fullPath).isDirectory()) {
+                  archive.directory('subdir/', file.fullPath);
+                  continue;
+                }
+                cacheManifestContent += `\n${file.path}`;
+                promises.push(
+                  fs
+                    .readFile(file.fullPath)
+                    .then((fileContent) => archive.append(fileContent, { name: file.path }))
+                    .catch((err) => reject(err)),
+                );
+              }
+              Promise.all(promises)
+                .then(() => archive.finalize())
+                .then(() => fs.writeFile(cacheManifestFilepath, cacheManifestContent))
+                .then(() => resolve())
+                .catch((err) => reject(err));
             });
         });
       };
 
-      getSignedUrls = (allFiles) => {
-        return axios(
-          {
-            method: 'post',
-            url: `https://be-cfmsta.forcemanager.net/api/fragments/v1/${fmConfig.guid}/multiUpload`,
+      uploadFile = (zipFileContent) => {
+        console.log('Uploading Zip file...');
+        const options = {
+          headers: {
+            'Content-Type': 'application/zip',
+          },
+        };
+        return axios
+          .put(signedUrl, zipFileContent, options)
+          .catch((err) => console.error('Upload error:', err));
+      };
+
+      setBridgeVersion = () => {
+        if (fmConfig.type === 'form') {
+          return fs
+            .readJson(path.resolve(currnetPath, 'package.json'))
+            .then((packageJson) => {
+              bridgeVersion = packageJson.dependencies['fm-bridge'];
+              console.log('setBridgeVersion', bridgeVersion);
+            })
+            .catch(console.error);
+        } else {
+          return Promise.resolve();
+        }
+      };
+
+      function changeImplementation(implementationId) {
+        return new Promise((resolve, reject) => {
+          console.log('Implementation ', implementationId);
+          axios({
+            method: 'put',
+            url: 'https://be-cfmpre.forcemanager.net/api/config/v1/changeImplementation',
             headers: { Authorization: `Bearer ${cfm_token}` },
             contentType: 'application/json',
             accept: '*/*',
-          },
-          { allFiles },
-        ).then((res) => {
-          resolve(allFiles.map((file, i) => ({ file, signedUrl: res.data.urls[i] })));
+            data: {
+              implementation: String(implementationId),
+            },
+          })
+            .then((res) => {
+              cfm_token = res.data.token;
+              let envFilepath = path.resolve(__dirname, '.env');
+              let envFileContent = `CFM_USER=${cfm_user}\nCFM_TOKEN=${cfm_token}`;
+              fs.writeFile(envFilepath, envFileContent)
+                .then(resolve)
+                .catch((err) => {
+                  console.error('Error writing .env file: ', err);
+                  reject();
+                });
+            })
+            .catch((err) => {
+              console.error('Change implementation error:', err.response.data.error || err);
+              if ((err.response.data.code = '2')) {
+                return login()
+                  .then((res) => changeImplementation(implementationId))
+                  .then(resolve)
+                  .catch((err) => {
+                    console.error(err);
+                    reject();
+                  });
+              } else {
+                reject();
+              }
+            });
         });
-      };
+      }
 
-      uploadFiles = (elements) => {
-        let promises = [];
-        for (const el of elements) {
-          if (fs.lstatSync(el.file.fullPath).isDirectory()) {
-            continue;
-          }
-          promises.push(
-            fs
-              .readFile(el.file.fullPath)
-              .then((fileContent) => {
-                const options = {
-                  headers: {
-                    'Content-Type': mime.lookup(file.path),
-                  },
-                };
-                return axios.put(el.signedUrl, fileContent, options);
-              })
-              .then((data) => {
-                console.log(`Successfully uploaded '${file.fullPath}' in ${data.Location}`);
-              })
-              .catch((err) => reject(err)),
-          );
-        }
-        Promise.all(promises)
-          .then(() => resolve())
-          .catch((err) => reject(err));
-      };
-
-      checkGuid()
-        .then(() => checkToken())
-        .then(() => readFiles())
-        .then((allFiles) => getSignedUrls(allFiles))
-        .then((res) => uploadFiles(res))
-        .then(() => console.log('Done!'))
-        .catch((err) => {
-          console.error(err);
+      checkGuidAndImpId()
+        .then(checkToken)
+        .then(() => changeImplementation(fmConfig[implementationKey]))
+        .then(zipFiles)
+        .then(getSignedUrl)
+        .then(() => fs.readFile(zipFilePath))
+        .then(uploadFile)
+        .then(setBridgeVersion)
+        .then(() => {
+          console.log('Done!');
+          fs.remove(zipFilePath).catch(console.error);
         })
-        .catch((err) => console.error(err));
+        .catch((err) => {
+          console.error('Error\n', err ? err : '');
+        });
     }
   });
 }
@@ -449,9 +569,7 @@ function setPublicUrl(sandbox) {
       parsedEnvFile.PUBLIC_URL = publicUrl;
       return fs.writeFile(sourcePath, envfile.stringifySync(parsedEnvFile));
     })
-    .catch((err) => {
-      console.log(err);
-    });
+    .catch(console.error);
 }
 
 function getGuid(fmConfig, guidKey) {
@@ -473,6 +591,6 @@ function getGuid(fmConfig, guidKey) {
         fmConfig[guidKey] = answers.guid;
         return answers.guid;
       })
-      .catch((err) => console.error(err));
+      .catch(console.error);
   }
 }
