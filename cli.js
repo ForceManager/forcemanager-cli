@@ -316,7 +316,7 @@ function deploy(sandbox) {
         return new Promise((resolve, reject) => {
           return axios({
             method: 'get',
-            url: `https://be-cfmpre.forcemanager.net/api/fragments/v1/${fmConfig[guidKey]}/upload`,
+            url: `https://be-cfm.forcemanager.net/api/fragments/v1/${fmConfig[guidKey]}/upload`,
             headers: { Authorization: `Bearer ${cfm_token}` },
             contentType: 'application/json',
             accept: '*/*',
