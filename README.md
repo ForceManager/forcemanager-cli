@@ -41,7 +41,7 @@ You can create new project o convert existing ones.
 
 - `cd <new-project-name>`
 
-- `yarn istall` or `npm istall`
+- `yarn` or `npm install`
 
 #### 2) Convert existing project
 

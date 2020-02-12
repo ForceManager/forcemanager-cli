@@ -20,24 +20,24 @@ console.log(
 console.log('\x1b[37m', '');
 
 if (args[0] === 'create') {
-  console.log('FM Create\n');
+  console.log('\x1b[0m', 'FM Create\n');
   create();
 } else if (args[0] === 'deploy') {
-  console.log('FM Deploy\n');
+  console.log('\x1b[0m', 'FM Deploy\n');
   deploy(false);
 } else if (args[0] === 'deploy_sandbox') {
-  console.log('FM Deploy\n');
+  console.log('\x1b[0m', 'FM Deploy\n');
   deploy(true);
 } else if (args[0] === 'start') {
   start();
 } else if (args[0] === 'set_public_url') {
-  console.log('FM Pre-build\n');
+  console.log('\x1b[0m', 'FM Pre-build\n');
   setPublicUrl(false);
 } else if (args[0] === 'set_public_url_sandbox') {
-  console.log('FM Pre-build\n');
+  console.log('\x1b[0m', 'FM Pre-build\n');
   setPublicUrl(true);
 } else {
-  console.log('No arguments found. Please use create, start or deploy.');
+  console.log('\x1b[0m', 'No arguments found. Please use create, start or deploy.');
 }
 
 function slugify(str) {
@@ -392,14 +392,19 @@ function deploy(sandbox) {
                   fs
                     .readFile(file.fullPath)
                     .then((fileContent) => archive.append(fileContent, { name: file.path }))
-                    .catch((err) => reject(err)),
+                    .catch(reject),
                 );
               }
+              promises.push(
+                fs
+                  .writeFile(cacheManifestFilepath, cacheManifestContent)
+                  .then(() => archive.append(cacheManifestContent, { name: cacheManifestFilepath }))
+                  .catch(reject),
+              );
               Promise.all(promises)
                 .then(() => archive.finalize())
-                .then(() => fs.writeFile(cacheManifestFilepath, cacheManifestContent))
                 .then(() => resolve())
-                .catch((err) => reject(err));
+                .catch(reject);
             });
         });
       };
