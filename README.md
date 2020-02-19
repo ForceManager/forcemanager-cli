@@ -65,7 +65,7 @@ Deploy the code of a Fragment
 
 - Go to the folder of the project you want to deploy.
 
-- `fm deploy`
+- `yarn deploy` or `npm run deploy`
 
 - Set GUID or other parameters if are not alredy set.
 
