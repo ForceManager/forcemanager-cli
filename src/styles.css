@@ -443,6 +443,7 @@ label#label-entity.error {
   justify-content: center;
   align-items: center;
   display: none;
+  top: 0;
 }
 .signature.show {
   display: flex;

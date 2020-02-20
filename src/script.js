@@ -150,22 +150,28 @@ function selctTab(event, tabId = null) {
 }
 
 function onSave() {
-  devData.entityType = { id: getSelectedValue(document.getElementsByName('entityType')) };
-  devData.columns = getSelectedValue(document.getElementsByName('column'));
-  devData.rows = getSelectedValue(document.getElementsByName('row'));
-  function getSelectedValue(elements) {
-    let selectedElement = Array.from(elements).find(function(el) {
-      return el.checked;
-    });
-    return parseInt(selectedElement.value, 10);
-  }
   devData.title = document.getElementById('input-title').value;
   devData.entity = { id: parseInt(document.getElementById('entity-id').value, 10) };
-  devData.formId = document.getElementById('form-id').value;
   devData.userData = JSON.parse(document.getElementById('user-data').innerHTML);
+  if (context.type === 'widget') {
+    devData.entityType = { id: getSelectedValue(document.getElementsByName('entityType')) };
+    devData.columns = getSelectedValue(document.getElementsByName('column'));
+    devData.rows = getSelectedValue(document.getElementsByName('row'));
+  }
+  if (context.type === 'form') {
+    devData.formId = document.getElementById('form-id').value;
+  }
   fmDevData[name] = devData;
   localStorage.setItem('fmDevData', JSON.stringify(fmDevData));
   location.reload();
+}
+
+function getSelectedValue(elements) {
+  let selectedElement = Array.from(elements).find(function(el) {
+    return el.checked;
+  });
+  if (!selectedElement.value) return;
+  return parseInt(selectedElement.value, 10);
 }
 
 function toggleConfig() {
