@@ -38,8 +38,8 @@ try {
   console.warn(error);
   devData = {};
 }
-context['entity'] = devData.entity || '';
-context['entityId'] = devData.entityId || '';
+context['entityType'] = devData.entityType || '';
+context['entity'] = { id: (devData.entity && devData.entity.id) || '' };
 context['userData'] = devData.userData || userDataTemplate;
 context['formId'] = devData.formId || '';
 
@@ -49,10 +49,10 @@ window.onload = function() {
   document.getElementById('widget-title').innerHTML = devData.title || '';
   document.getElementById('public-key').value = devData.publicKey || '';
   document.getElementById('user-data').innerHTML = JSON.stringify(context.userData);
-  document.getElementById('entity-id').value = context.entityId;
+  document.getElementById('entity-id').value = context.entity.id;
   document.getElementById('form-id').value = context.formId;
-  if (context.entity) {
-    document.getElementById(`entity-${context.entity}`).checked = true;
+  if (context.entityType && context.entityType.id) {
+    document.getElementById(`entity-${context.entityType.id}`).checked = true;
   }
   if (devData.columns) {
     document.getElementById(`columns-${devData.columns}`).checked = true;
@@ -69,7 +69,7 @@ window.onload = function() {
       document.getElementById('form').outerHTML = '';
       document.getElementById('page').outerHTML = '';
       domEl = 'widget-content';
-      options = !!context.entity;
+      options = context.entityType && context.entityType.id && context.entity && context.entity.id;
       break;
     case 'form':
       document.getElementById('form').style.display = 'block';
@@ -79,7 +79,7 @@ window.onload = function() {
       context = {
         ...context,
         entityForm: null,
-        entity: 2,
+        entityType: { id: 2 },
         mode: context.formId ? 'edition' : 'creation',
         isReadonly: false,
         idState: -1,
@@ -150,26 +150,28 @@ function selctTab(event, tabId = null) {
 }
 
 function onSave() {
-  let entities = document.getElementsByName('entity');
-  let cols = document.getElementsByName('column');
-  let rows = document.getElementsByName('row');
-  check(entities, 'entity');
-  check(cols, 'columns');
-  check(rows, 'rows');
-  function check(elements, name) {
-    for (var i = 0; i < elements.length; i++) {
-      if (elements[i].checked) {
-        devData[name] = elements[i].value;
-      }
-    }
-  }
   devData.title = document.getElementById('input-title').value;
-  devData.entityId = document.getElementById('entity-id').value;
-  devData.formId = document.getElementById('form-id').value;
+  devData.entity = { id: parseInt(document.getElementById('entity-id').value, 10) };
   devData.userData = JSON.parse(document.getElementById('user-data').innerHTML);
+  if (context.type === 'widget') {
+    devData.entityType = { id: getSelectedValue(document.getElementsByName('entityType')) };
+    devData.columns = getSelectedValue(document.getElementsByName('column'));
+    devData.rows = getSelectedValue(document.getElementsByName('row'));
+  }
+  if (context.type === 'form') {
+    devData.formId = document.getElementById('form-id').value;
+  }
   fmDevData[name] = devData;
   localStorage.setItem('fmDevData', JSON.stringify(fmDevData));
   location.reload();
+}
+
+function getSelectedValue(elements) {
+  let selectedElement = Array.from(elements).find(function(el) {
+    return el.checked;
+  });
+  if (!selectedElement.value) return;
+  return parseInt(selectedElement.value, 10);
 }
 
 function toggleConfig() {

@@ -74,13 +74,14 @@ function create() {
 
   if (!name) {
     console.log(
-      '\x1b[37m%s\x1b[36m%s\x1b[32m%s\x1b[37m%s\x1b[36m%s\x1b[32m',
+      '\x1b[37m%s\x1b[36m%s\x1b[32m%s\x1b[37m%s\x1b[36m%s\x1b[32m%s\x1b[0m',
       'Please specify the project directory:\n',
       '   fm-cli create',
       ' <project-directory>\n\n',
       'For example:\n',
       '   fm-cli create',
       ' my-custom-widget\n',
+      '',
     );
   } else {
     name = slugify(name);

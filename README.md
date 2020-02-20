@@ -54,25 +54,20 @@ You can create new project o convert existing ones.
 ### Start a dev environment
 
 Opens a web page with an iframe where your Fragment is going to be embedded.
-The default port of localhost that is going to be loaded inside the iframe is 3000. You can change this port specifying a different number.
 
-- Go to the folder of the project you want to load.
-
-- Run your project in any port of localhost (`yarn start`, `npm ng serve`, ...).
-
-- `fm start` or `fm start 4000`
+- `yarn start` or `npm start`
 
 - Configure Options and set Private and Public Key to API login.
 
 ### Deploy Fragment
 
-Deploy the code of a Fragment to AWS.
+Deploy the code of a Fragment
 
 - Go to the folder of the project you want to deploy.
 
-- `fm deploy`
+- `yarn deploy` or `npm run deploy`
 
-- Set GUID if is not alredy set.
+- Set GUID or other parameters if are not alredy set.
 
 ## Widgets
 
