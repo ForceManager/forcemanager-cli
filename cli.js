@@ -399,7 +399,7 @@ function deploy(sandbox) {
               promises.push(
                 fs
                   .writeFile(cacheManifestFilepath, cacheManifestContent)
-                  .then(() => archive.append(cacheManifestContent, { name: cacheManifestFilepath }))
+                  .then(() => archive.append(cacheManifestContent, { name: 'cache.manifest' }))
                   .catch(reject),
               );
               Promise.all(promises)
@@ -420,20 +420,6 @@ function deploy(sandbox) {
         return axios
           .put(signedUrl, zipFileContent, options)
           .catch((err) => console.error('Upload error:', err));
-      };
-
-      setBridgeVersion = () => {
-        if (fmConfig.type === 'form') {
-          return fs
-            .readJson(path.resolve(currnetPath, 'package.json'))
-            .then((packageJson) => {
-              bridgeVersion = packageJson.dependencies['fm-bridge'];
-              console.log('setBridgeVersion', bridgeVersion);
-            })
-            .catch(console.error);
-        } else {
-          return Promise.resolve();
-        }
       };
 
       function changeImplementation(implementationId) {
@@ -484,7 +470,6 @@ function deploy(sandbox) {
         .then(getSignedUrl)
         .then(() => fs.readFile(zipFilePath))
         .then(uploadFile)
-        .then(setBridgeVersion)
         .then(() => {
           console.log('Done!');
           fs.remove(zipFilePath).catch(console.error);
