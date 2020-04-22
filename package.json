@@ -1,6 +1,6 @@
 {
   "name": "forcemanager-cli",
-  "version": "0.0.1-beta.24",
+  "version": "0.0.1-beta.27",
   "description": "ForceManager CLI",
   "homepage": "https://github.com/ForceManager/forcemanager-cli",
   "bugs": {
@@ -15,8 +15,7 @@
     "type": "git",
     "url": "git@github.com:ForceManager/forcemanager-cli.git"
   },
-  "dependencies": {},
-  "devDependencies": {
+  "dependencies": {
     "archiver": "^4.0.1",
     "aws-sdk": "^2.657.0",
     "axios": "^0.19.2",
@@ -38,5 +37,6 @@
     "prettier": "^2.0.4",
     "readdirp": "^3.4.0"
   },
+  "devDependencies": {},
   "private": false
 }
