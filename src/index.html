@@ -47,7 +47,7 @@
         <label>Entity ID</label>
         <input type="text" id="entity-id" name="entity-id" />
       </div>
-      <div class="config-panel-item config-panel-item-widget config-panel-item-form">
+      <div class="config-panel-item config-panel-item-form">
         <label>Form ID</label>
         <input type="text" id="form-id" name="form-id" />
       </div>
@@ -80,12 +80,16 @@
     <div class="config-panel-tab-content" id="login-tab-content">
       <form id="login" method="post">
         <div class="config-panel-item">
-          <label>Public Key</label>
-          <input type="text" id="public-key" name="public-key" autocomplete="username email" />
+          <label class="label-implementation" id="label-implementation">Implementation ID</label>
+          <input type="text" id="implementation" name="implementation" />
         </div>
         <div class="config-panel-item">
-          <label>Private Key</label>
-          <input type="password" id="private-key" name="private-key" autocomplete="new-password" />
+          <label>User</label>
+          <input type="text" id="username" name="username" autocomplete="username email" />
+        </div>
+        <div class="config-panel-item">
+          <label>Password</label>
+          <input type="password" id="password" name="password" autocomplete="new-password" />
         </div>
         <div class="config-panel-item">
           <input type="submit" class="button" value="Login" />
@@ -114,8 +118,8 @@
         </div>
         <div class="form-images"></div>
       </div>
-      <div class="form-content" id="form-content"></div>
     </div>
+    <div class="form-content" id="form-content"></div>
     <div id="loader" class="loader">
       <div class="loader-icon"></div>
     </div>
@@ -167,11 +171,8 @@
   <div id="page" class="page">
     <div class="page-content" id="page-content"></div>
   </div>
-  <!-- <script type="text/javascript" src="http://localhost:5500/lib/fm-bridge-backend.js"></script> -->
-  <!-- <script type="text/javascript"
-      src="https://d15abo3q1yyhdy.cloudfront.net/fragments/fm-bridge-backend.js"></script> -->
   <script type="text/javascript"
-    src="https://fmfragments.s3.amazonaws.com/bridge/fm-bridge-backend-0.0.1-beta.17.min.js"></script>
+    src="https://d2ge53r08e79iy.cloudfront.net/bridge/fm-bridge-backend-0.0.1-beta.24.min.js"></script>
   <script type="text/javascript" src="script.js"></script>
 </body>
 

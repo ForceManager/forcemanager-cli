@@ -1,10 +1,11 @@
 let domEl;
-let name = '{{name}}';
+let guid = '{{name}}';
 let context = {
   platform: 'dev',
   type: '{{type}}',
   widgetType: '{{widgetType}}',
 };
+let beCfmDevToken = localStorage.getItem('beCfmDevToken') || null;
 let fmDevData = localStorage.getItem('fmDevData') || {};
 let devData;
 let options;
@@ -33,7 +34,7 @@ let userDataTemplate = {
 };
 try {
   fmDevData = JSON.parse(fmDevData);
-  devData = fmDevData[name] || {};
+  devData = fmDevData[guid] || {};
 } catch (error) {
   console.warn(error);
   devData = {};
@@ -41,16 +42,17 @@ try {
 context['entityType'] = devData.entityType || '';
 context['entity'] = { id: (devData.entity && devData.entity.id) || '' };
 context['userData'] = devData.userData || userDataTemplate;
-context['formId'] = devData.formId || '';
+context['form'] = { id: devData.formId || null };
 
-window.onload = function() {
+window.onload = function () {
   document.getElementById('dev-body').style.display = 'flex';
   document.getElementById('input-title').value = devData.title || '';
   document.getElementById('widget-title').innerHTML = devData.title || '';
-  document.getElementById('public-key').value = devData.publicKey || '';
+  document.getElementById('username').value = devData.username || '';
   document.getElementById('user-data').innerHTML = JSON.stringify(context.userData);
   document.getElementById('entity-id').value = context.entity.id;
-  document.getElementById('form-id').value = context.formId;
+  document.getElementById('form-id').value = context.form.id || '';
+  document.getElementById('implementation').value = devData.implementation || '';
   if (context.entityType && context.entityType.id) {
     document.getElementById(`entity-${context.entityType.id}`).checked = true;
   }
@@ -97,38 +99,124 @@ window.onload = function() {
   }
   let panel = document.getElementById('config-panel');
 
-  if (options && devData.logged) {
-    window.FmBridgeBackend.setContext(context);
-    window.FmBridgeBackend.init();
-    window.FmBridgeBackend.loadFragment(name, 'http://localhost:{{port}}', domEl);
-  } else if (!options) {
+  if (!options) {
     console.log('No entity set');
     document.getElementById('label-entity').classList.add('error');
     panel.classList.toggle('show');
-  } else if (!devData.logged) {
+  } else if (options && beCfmDevToken) {
+    getExternalKeys()
+      .then(({ publicKey, secretKey }) => externalLogin(publicKey, secretKey))
+      .then((res) => {
+        devData.externalToken = res;
+        return window.FmBridgeBackend.setContext(context);
+      })
+      .then(() => {
+        return window.FmBridgeBackend.init();
+      })
+      .then(() => {
+        return window.FmBridgeBackend.setActions(actions);
+      })
+      .then(() => {
+        return window.FmBridgeBackend.loadFragment(guid, 'http://localhost:{{port}}', domEl);
+      })
+      .catch(console.warn);
+  } else if (options && !beCfmDevToken) {
     console.log('Not logged in');
     panel.classList.toggle('show');
     selctTab(null, 'login-tab');
   }
+
+  function cfmLogin(username, password) {
+    return new Promise((resolve, reject) => {
+      window.FmBridgeBackend.cfmLogin(username, password)
+        .then(({ data }) => resolve(data.token))
+        .catch((err) => {
+          if (err.response && err.response.status === 400) {
+            console.log('Wrong user or password');
+            reject(err);
+          } else if (err.response && err.response.status === 401) {
+            console.log('Expired token');
+            localStorage.setItem('cfmTokenDev', null);
+            reject(err);
+          } else {
+            reject(err);
+          }
+        });
+    });
+  }
+
+  function changeImplementation() {
+    return new Promise((resolve, reject) => {
+      window.FmBridgeBackend.changeImplementation(beCfmDevToken, devData.implementation)
+        .then(({ data }) => {
+          localStorage.setItem('beCfmDevToken', data.token);
+          resolve();
+        })
+        .catch(reject);
+    });
+  }
+
+  function getExternalKeys() {
+    return new Promise((resolve, reject) => {
+      window.FmBridgeBackend.getExternalKeys(beCfmDevToken)
+        .then(({ data }) => {
+          if (data) {
+            const fmFragmentsKeys = data.find((el) => el.name === 'fm-fragments');
+            if (!fmFragmentsKeys) {
+              reject({
+                code: 'no-fragments-keys',
+                message: 'No fm-fragments keys found in FM CLI getExternalKeys response',
+              });
+            } else {
+              resolve(fmFragmentsKeys);
+            }
+          } else {
+            reject({
+              code: 'error-getting-keys',
+              message: 'Error getting keys in FM CLI getExternalKeys',
+            });
+          }
+        })
+        .catch(reject);
+    });
+  }
+
+  function externalLogin(publicKey, privateKey) {
+    return new Promise((resolve, reject) => {
+      window.FmBridgeBackend.externalLogin(publicKey, privateKey)
+        .then((res) => {
+          if (res.data.token) localStorage.setItem(`fmFragmentToken-${guid}`, res.data.token);
+          resolve();
+        })
+        .catch((err) => reject(err));
+    });
+  }
+
   // Get form's DOM object
   let login = document.getElementById('login');
   login.addEventListener('submit', (e) => {
     e.preventDefault();
-    let privateKey = document.getElementById('private-key').value;
-    let publicKey = document.getElementById('public-key').value;
-    window.FmBridgeBackend.getDevLoginToken(name, publicKey, privateKey)
-      .then(function() {
-        console.log('getDevLoginToken OK');
+    document.getElementById('label-entity').classList.remove('error');
+    devData.implementation = document.getElementById('implementation').value;
+    let username = document.getElementById('username').value;
+    let password = document.getElementById('password').value;
+    if (!devData.implementation) {
+      document.getElementById('label-entity').classList.add('error');
+      return;
+    }
+    cfmLogin(username, password)
+      .then(function (token) {
         if (window.PasswordCredential) {
           var c = new PasswordCredential(e.target);
           navigator.credentials.store(c);
         }
-        devData.logged = true;
-        fmDevData[name] = devData;
-        localStorage.setItem('fmDevData', JSON.stringify(fmDevData));
+        beCfmDevToken = token;
+        return changeImplementation();
+      })
+      .then(function () {
         location.reload();
       })
-      .catch(function(err) {
+      .catch(function (err) {
         console.warn(err);
       });
   });
@@ -150,22 +238,28 @@ function selctTab(event, tabId = null) {
 }
 
 function onSave() {
-  devData.entityType = { id: getSelectedValue(document.getElementsByName('entityType')) };
-  devData.columns = getSelectedValue(document.getElementsByName('column'));
-  devData.rows = getSelectedValue(document.getElementsByName('row'));
-  function getSelectedValue(elements) {
-    let selectedElement = Array.from(elements).find(function(el) {
-      return el.checked;
-    });
-    return parseInt(selectedElement.value, 10);
-  }
   devData.title = document.getElementById('input-title').value;
   devData.entity = { id: parseInt(document.getElementById('entity-id').value, 10) };
-  devData.formId = document.getElementById('form-id').value;
   devData.userData = JSON.parse(document.getElementById('user-data').innerHTML);
-  fmDevData[name] = devData;
+  if (context.type === 'widget') {
+    devData.entityType = { id: getSelectedValue(document.getElementsByName('entityType')) };
+    devData.columns = getSelectedValue(document.getElementsByName('column'));
+    devData.rows = getSelectedValue(document.getElementsByName('row'));
+  }
+  if (context.type === 'form') {
+    devData.formId = document.getElementById('form-id').value;
+  }
+  fmDevData[guid] = devData;
   localStorage.setItem('fmDevData', JSON.stringify(fmDevData));
   location.reload();
+}
+
+function getSelectedValue(elements) {
+  let selectedElement = Array.from(elements).find(function (el) {
+    return el.checked;
+  });
+  if (!selectedElement.value) return;
+  return parseInt(selectedElement.value, 10);
 }
 
 function toggleConfig() {
@@ -176,17 +270,21 @@ function toggleConfig() {
 var dialogId;
 var signatureId;
 
-window.fmDevFunctions = {
+var actions = {
+  finishActivity() {
+    location.reload();
+  },
+
+  saveData(id) {},
+
   setTitle(title) {
     document.getElementById('form-title').innerHTML = title;
   },
 
-  collapseImagesView() {
-    document.getElementById('form-camera-images').classList.add('collapse');
-  },
-
-  expandImagesView() {
-    document.getElementById('form-camera-images').classList.remove('collapse');
+  openSignatureView(id, background) {
+    document.getElementById('signature-canvas').style.backgroundColor = background;
+    document.getElementById('signature').classList.add('show');
+    signatureId = id;
   },
 
   showCameraImages() {
@@ -197,12 +295,26 @@ window.fmDevFunctions = {
     document.getElementById('form-camera-images').classList.remove('show');
   },
 
+  expandImagesView() {
+    document.getElementById('form-camera-images').classList.remove('collapse');
+  },
+  collapseImagesView() {
+    document.getElementById('form-camera-images').classList.add('collapse');
+  },
+
   showLoading() {
     document.getElementById('loader').classList.add('show');
   },
 
   hideLoading() {
     document.getElementById('loader').classList.remove('show');
+  },
+
+  showAlertDialog(id, message, btnOk) {
+    document.getElementById('alert-dialog-msg').innerHTML = message;
+    document.getElementById('alert-dialog-button').innerHTML = btnOk;
+    document.getElementById('alert-dialog').classList.add('show');
+    dialogId = id;
   },
 
   showConfirmDialog(id, message, btnOkStr, btnKOStr) {
@@ -213,54 +325,14 @@ window.fmDevFunctions = {
     dialogId = id;
   },
 
-  hideConfirmDialog() {
-    document.getElementById('confirm-dialog').classList.remove('show');
-  },
-
-  showAlertDialog(id, message, btnOk) {
-    document.getElementById('alert-dialog-msg').innerHTML = message;
-    document.getElementById('alert-dialog-button').innerHTML = btnOk;
-    document.getElementById('alert-dialog').classList.add('show');
-    dialogId = id;
-  },
-
-  hideAlertDialog() {
-    document.getElementById('alert-dialog').classList.remove('show');
-  },
-
-  showAlertDialog(id, message, btnOk) {
-    document.getElementById('alert-dialog-msg').innerHTML = message;
-    document.getElementById('alert-dialog-button').innerHTML = btnOk;
-    document.getElementById('alert-dialog').classList.add('show');
-    dialogId = id;
-  },
-
-  hideAlertDialog() {
-    document.getElementById('alert-dialog').classList.remove('show');
-  },
-
-  showSignatureView(id, background) {
-    document.getElementById('signature-canvas').style.backgroundColor = background;
-    document.getElementById('signature').classList.add('show');
-    signatureId = id;
-  },
-
-  hideSignatureView() {
-    document.getElementById('signature').classList.remove('show');
-  },
-
-  showDatePicker(date, dateMax, dateMin) {
-    document.getElementById('date-picker').classList.add('show');
-  },
-
-  hideDatePicker() {
-    document.getElementById('date-picker').classList.remove('show');
-  },
+  // showDatePicker(date, dateMax, dateMin) {
+  //   document.getElementById('date-picker').classList.add('show');
+  // },
 
   expiredDevLoginToken() {
     console.log('expiredDevLoginToken');
     devData.logged = false;
-    fmDevData[name] = devData;
+    fmDevData[guid] = devData;
     localStorage.setItem('fmDevData', JSON.stringify(fmDevData));
     location.reload();
   },
@@ -273,9 +345,8 @@ function datePicker(res) {
         detail: { response: new Date().getTime() },
       }),
     );
-  } else {
-    window.fmDevFunctions.hideDatePicker();
   }
+  document.getElementById('date-picker').classList.remove('show');
 }
 
 function confirmDialog(res) {
@@ -284,6 +355,8 @@ function confirmDialog(res) {
       detail: { callbackId: dialogId, response: res },
     }),
   );
+  document.getElementById('confirm-dialog').classList.remove('show');
+  // document.getElementById('alert-dialog').classList.remove('show');
 }
 
 function signature(res) {
@@ -298,7 +371,6 @@ function signature(res) {
         },
       }),
     );
-  } else {
-    window.fmDevFunctions.hideSignatureView();
   }
+  document.getElementById('signature').classList.remove('show');
 }

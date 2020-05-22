@@ -171,7 +171,8 @@ label.label-title {
   width: 100%;
   margin-bottom: 10px;
 }
-label#label-entity.error {
+label#label-entity.error,
+label#label-implementation.error {
   color: red;
 }
 .radio-buttons {
@@ -443,6 +444,7 @@ label#label-entity.error {
   justify-content: center;
   align-items: center;
   display: none;
+  top: 0;
 }
 .signature.show {
   display: flex;

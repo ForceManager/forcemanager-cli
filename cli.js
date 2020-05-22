@@ -12,6 +12,7 @@ const archiver = require('archiver');
 const axios = require('axios');
 const envfile = require('envfile');
 const download = require('download-git-repo');
+const package = require('./package.json');
 
 console.log(
   '\x1b[33m',
@@ -36,6 +37,8 @@ if (args[0] === 'create') {
 } else if (args[0] === 'set_public_url_sandbox') {
   console.log('\x1b[0m', 'FM Pre-build\n');
   setPublicUrl(true);
+} else if (args[0] === '-v') {
+  console.log('\x1b[0m', `Version: ${package.version}\n`);
 } else {
   console.log('\x1b[0m', 'No arguments found. Please use create, start or deploy.');
 }
@@ -68,7 +71,6 @@ function create() {
     root: '',
     entryType: 'all',
   };
-  let allFiles = [];
   let name = args[1];
   let convert = false;
 
@@ -117,7 +119,7 @@ function create() {
             name: 'type',
             type: 'list',
             message: 'Type',
-            choices: ['Widget', 'Form', 'Page'],
+            choices: ['Widget', 'Form'], //, 'Page'
             default: 0,
           },
           // {
@@ -136,7 +138,7 @@ function create() {
             name: name,
             type: answers.type.toLowerCase(),
             widget_type: 'entity',
-            widget_type: function() {
+            widget_type: function () {
               if (answers.type === 'Widget') {
                 return 'entity';
                 // switch (answers.widget_type) {
@@ -169,7 +171,7 @@ function create() {
     }
 
     function copyFiles() {
-      download(`ForceManager/fm-${fmConfigData.type}-template`, fmConfigData.name, function(err) {
+      download(`ForceManager/fm-${fmConfigData.type}-template`, fmConfigData.name, function (err) {
         if (err) {
           console.warn('Error downloading template.');
         } else {
@@ -212,7 +214,6 @@ function deploy(sandbox) {
       let fmConfig = JSON.parse(fileContent);
       let cfm_user = process.env.CFM_USER;
       let cfm_token = process.env.CFM_TOKEN;
-      let bridgeVersion;
       let signedUrl;
       const zipFilePath = `${__dirname}/file.zip`;
       const guidKey = sandbox ? 'guidSandbox' : 'guid';
@@ -243,6 +244,8 @@ function deploy(sandbox) {
               fmConfigEdit.set(implementationKey, answers.implementationId);
               fmConfigEdit.save();
               fmConfig.guid = answers.guid;
+              fmConfig[guidKey] = answers.guid;
+              fmConfig[implementationKey] = answers.implementationId;
             })
             .catch(console.error);
         }
@@ -292,9 +295,7 @@ function deploy(sandbox) {
               cfm_token = res.data.token;
               let envFilepath = path.resolve(__dirname, '.env');
               let envFileContent = `CFM_USER=${cfm_user}\nCFM_TOKEN=${cfm_token}`;
-              fs.writeFile(envFilepath, envFileContent)
-                .then(resolve)
-                .catch(reject);
+              fs.writeFile(envFilepath, envFileContent).then(resolve).catch(reject);
             })
             .catch((err) => {
               if (err.response && err.response.status === 400) {
@@ -338,7 +339,6 @@ function deploy(sandbox) {
         return new Promise((resolve, reject) => {
           const distFolderPath = path.join(currnetPath, fmConfig.distFolder);
           let settings = {
-            root: distFolderPath,
             entryType: 'all',
           };
           let allFiles = [];
@@ -346,18 +346,16 @@ function deploy(sandbox) {
           let archive = archiver('zip', {
             zlib: { level: 9 },
           });
-          const cacheManifestFilepath = path.resolve(currnetPath, 'build', 'cache.manifest');
-          let cacheManifestContent = 'CACHE MANIFEST\n';
 
-          output.on('close', function() {
+          output.on('close', function () {
             console.log('Zip file successfully created. Size: ' + archive.pointer() + ' bytes.');
           });
 
-          output.on('end', function() {
+          output.on('end', function () {
             console.log('Data has been drained');
           });
 
-          archive.on('warning', function(err) {
+          archive.on('warning', function (err) {
             if (err.code === 'ENOENT') {
               console.warn(err);
             } else {
@@ -365,30 +363,29 @@ function deploy(sandbox) {
             }
           });
 
-          archive.on('error', function(err) {
+          archive.on('error', function (err) {
             throw err;
           });
 
           archive.pipe(output);
 
-          readdirp(settings)
-            .on('data', function(file) {
+          readdirp(distFolderPath, settings)
+            .on('data', function (file) {
               allFiles.push(file);
             })
-            .on('warn', function(warn) {
+            .on('warn', function (warn) {
               reject(warn);
             })
-            .on('error', function(err) {
+            .on('error', function (err) {
               reject(err);
             })
-            .on('end', function() {
+            .on('end', function () {
               let promises = [];
               for (const file of allFiles) {
                 if (fs.lstatSync(file.fullPath).isDirectory()) {
                   archive.directory('subdir/', file.fullPath);
                   continue;
                 }
-                cacheManifestContent += `\n${file.path}`;
                 promises.push(
                   fs
                     .readFile(file.fullPath)
@@ -396,12 +393,6 @@ function deploy(sandbox) {
                     .catch(reject),
                 );
               }
-              promises.push(
-                fs
-                  .writeFile(cacheManifestFilepath, cacheManifestContent)
-                  .then(() => archive.append(cacheManifestContent, { name: cacheManifestFilepath }))
-                  .catch(reject),
-              );
               Promise.all(promises)
                 .then(() => archive.finalize())
                 .then(() => resolve())
@@ -420,20 +411,6 @@ function deploy(sandbox) {
         return axios
           .put(signedUrl, zipFileContent, options)
           .catch((err) => console.error('Upload error:', err));
-      };
-
-      setBridgeVersion = () => {
-        if (fmConfig.type === 'form') {
-          return fs
-            .readJson(path.resolve(currnetPath, 'package.json'))
-            .then((packageJson) => {
-              bridgeVersion = packageJson.dependencies['fm-bridge'];
-              console.log('setBridgeVersion', bridgeVersion);
-            })
-            .catch(console.error);
-        } else {
-          return Promise.resolve();
-        }
       };
 
       function changeImplementation(implementationId) {
@@ -484,10 +461,16 @@ function deploy(sandbox) {
         .then(getSignedUrl)
         .then(() => fs.readFile(zipFilePath))
         .then(uploadFile)
-        .then(setBridgeVersion)
         .then(() => {
-          console.log('Done!');
+          console.log('Done!\n');
           fs.remove(zipFilePath).catch(console.error);
+          return fs.readFile(path.resolve(currnetPath, 'package.json'), 'utf8');
+        })
+        .then((fileContent) => {
+          try {
+            const package = JSON.parse(fileContent);
+            package.version && console.log(`Deployed version: ${package.version}\n`);
+          } catch (error) {}
         })
         .catch((err) => {
           console.error('Error\n', err ? err : '');
