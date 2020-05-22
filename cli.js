@@ -71,7 +71,6 @@ function create() {
     root: '',
     entryType: 'all',
   };
-  let allFiles = [];
   let name = args[1];
   let convert = false;
 
@@ -120,7 +119,7 @@ function create() {
             name: 'type',
             type: 'list',
             message: 'Type',
-            choices: ['Widget', 'Form', 'Page'],
+            choices: ['Widget', 'Form'], //, 'Page'
             default: 0,
           },
           // {
@@ -215,7 +214,6 @@ function deploy(sandbox) {
       let fmConfig = JSON.parse(fileContent);
       let cfm_user = process.env.CFM_USER;
       let cfm_token = process.env.CFM_TOKEN;
-      let bridgeVersion;
       let signedUrl;
       const zipFilePath = `${__dirname}/file.zip`;
       const guidKey = sandbox ? 'guidSandbox' : 'guid';
@@ -246,6 +244,8 @@ function deploy(sandbox) {
               fmConfigEdit.set(implementationKey, answers.implementationId);
               fmConfigEdit.save();
               fmConfig.guid = answers.guid;
+              fmConfig[guidKey] = answers.guid;
+              fmConfig[implementationKey] = answers.implementationId;
             })
             .catch(console.error);
         }
@@ -346,8 +346,6 @@ function deploy(sandbox) {
           let archive = archiver('zip', {
             zlib: { level: 9 },
           });
-          const cacheManifestFilepath = path.resolve(currnetPath, 'build', 'cache.manifest');
-          let cacheManifestContent = 'CACHE MANIFEST\n';
 
           output.on('close', function () {
             console.log('Zip file successfully created. Size: ' + archive.pointer() + ' bytes.');
@@ -388,7 +386,6 @@ function deploy(sandbox) {
                   archive.directory('subdir/', file.fullPath);
                   continue;
                 }
-                cacheManifestContent += `\n${file.path}`;
                 promises.push(
                   fs
                     .readFile(file.fullPath)
@@ -396,12 +393,6 @@ function deploy(sandbox) {
                     .catch(reject),
                 );
               }
-              promises.push(
-                fs
-                  .writeFile(cacheManifestFilepath, cacheManifestContent)
-                  .then(() => archive.append(cacheManifestContent, { name: 'cache.manifest' }))
-                  .catch(reject),
-              );
               Promise.all(promises)
                 .then(() => archive.finalize())
                 .then(() => resolve())
@@ -471,8 +462,15 @@ function deploy(sandbox) {
         .then(() => fs.readFile(zipFilePath))
         .then(uploadFile)
         .then(() => {
-          console.log('Done!');
+          console.log('Done!\n');
           fs.remove(zipFilePath).catch(console.error);
+          return fs.readFile(path.resolve(currnetPath, 'package.json'), 'utf8');
+        })
+        .then((fileContent) => {
+          try {
+            const package = JSON.parse(fileContent);
+            package.version && console.log(`Deployed version: ${package.version}\n`);
+          } catch (error) {}
         })
         .catch((err) => {
           console.error('Error\n', err ? err : '');
