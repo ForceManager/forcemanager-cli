@@ -57,7 +57,7 @@ Opens a web page with an iframe where your Fragment is going to be embedded.
 
 - `yarn start` or `npm start`
 
-- Configure Options and set Private and Public Key to API login.
+- Configure Options and login with ForceManager Setup credentials.
 
 ### Deploy Fragment
 
