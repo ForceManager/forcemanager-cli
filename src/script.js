@@ -123,7 +123,8 @@ window.onload = function () {
 
   function cfmLogin(username, password) {
     return new Promise((resolve, reject) => {
-      window.FmBridgeBackend.cfmLogin(username, password)
+      window.FmBridgeBackend.setContext(context)
+        .then(() => window.FmBridgeBackend.cfmLogin(username, password))
         .then(({ data }) => resolve(data.token))
         .catch((err) => {
           if (err.response && err.response.status === 400) {
