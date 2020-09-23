@@ -4,8 +4,9 @@ let context = {
   platform: 'dev',
   type: '{{type}}',
   widgetType: '{{widgetType}}',
+  cfmToken: localStorage.getItem('beCfmDevToken') || null,
+  cfmBaseUrl: 'https://be-cfm.forcemanager.net/api',
 };
-let beCfmDevToken = localStorage.getItem('beCfmDevToken') || null;
 let fmDevData = localStorage.getItem('fmDevData') || {};
 let devData;
 let options;
@@ -82,7 +83,7 @@ window.onload = function () {
         ...context,
         entityForm: null,
         entityType: { id: 2 },
-        mode: context.formId ? 'edition' : 'creation',
+        mode: context.form.id ? 'edition' : 'creation',
         isReadonly: false,
         idState: -1,
         endState: 0,
@@ -103,24 +104,18 @@ window.onload = function () {
     console.log('No entity set');
     document.getElementById('label-entity').classList.add('error');
     panel.classList.toggle('show');
-  } else if (options && beCfmDevToken) {
-    getExternalKeys()
+  } else if (options && context.cfmToken) {
+    window.FmBridgeBackend.setContext(context)
+      .then(() => getExternalKeys())
       .then(({ publicKey, secretKey }) => externalLogin(publicKey, secretKey))
       .then((res) => {
         devData.externalToken = res;
-        return window.FmBridgeBackend.setContext(context);
-      })
-      .then(() => {
         return window.FmBridgeBackend.init();
       })
-      .then(() => {
-        return window.FmBridgeBackend.setActions(actions);
-      })
-      .then(() => {
-        return window.FmBridgeBackend.loadFragment(guid, 'http://localhost:{{port}}', domEl);
-      })
+      .then(() => window.FmBridgeBackend.setActions(actions))
+      .then(() => window.FmBridgeBackend.loadFragment(guid, 'http://localhost:{{port}}', domEl))
       .catch(console.warn);
-  } else if (options && !beCfmDevToken) {
+  } else if (options && !context.cfmToken) {
     console.log('Not logged in');
     panel.classList.toggle('show');
     selctTab(null, 'login-tab');
@@ -147,7 +142,7 @@ window.onload = function () {
 
   function changeImplementation() {
     return new Promise((resolve, reject) => {
-      window.FmBridgeBackend.changeImplementation(beCfmDevToken, devData.implementation)
+      window.FmBridgeBackend.changeImplementation(context.cfmToken, devData.implementation)
         .then(({ data }) => {
           localStorage.setItem('beCfmDevToken', data.token);
           resolve();
@@ -158,7 +153,7 @@ window.onload = function () {
 
   function getExternalKeys() {
     return new Promise((resolve, reject) => {
-      window.FmBridgeBackend.getExternalKeys(beCfmDevToken)
+      window.FmBridgeBackend.getExternalKeys(context.cfmToken)
         .then(({ data }) => {
           if (data) {
             const fmFragmentsKeys = data.find((el) => el.name === 'fm-fragments');
@@ -210,7 +205,7 @@ window.onload = function () {
           var c = new PasswordCredential(e.target);
           navigator.credentials.store(c);
         }
-        beCfmDevToken = token;
+        context.cfmToken = token;
         return changeImplementation();
       })
       .then(function () {
@@ -275,7 +270,12 @@ var actions = {
     location.reload();
   },
 
-  saveData(id) {},
+  saveData(id) {
+    if (id) {
+      context.form.id = id;
+      window.FmBridgeBackend.setContext(context);
+    }
+  },
 
   setTitle(title) {
     document.getElementById('form-title').innerHTML = title;
@@ -363,7 +363,7 @@ function signature(res) {
   console.log('signature', res);
   if (res === 'OK') {
     window.dispatchEvent(
-      new CustomEvent('signatureResponse', {
+      new CustomEvent('openSignatureView', {
         detail: {
           callbackId: signatureId,
           response:

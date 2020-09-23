@@ -176,14 +176,8 @@ function create() {
           console.warn('Error downloading template.');
         } else {
           Promise.all([
-            setProjectName(
-              path.join(currnetPath, fmConfigData.name, 'fmConfig.json'),
-              fmConfigData.name,
-            ),
-            setProjectName(
-              path.join(currnetPath, fmConfigData.name, 'package.json'),
-              fmConfigData.name,
-            ),
+            setProjectName(path.join(currnetPath, fmConfigData.name, 'fmConfig.json'), false),
+            setProjectName(path.join(currnetPath, fmConfigData.name, 'package.json'), true),
           ])
             .then((res) => {
               console.log('Done!');
@@ -193,11 +187,14 @@ function create() {
       });
     }
 
-    function setProjectName(filePath) {
+    function setProjectName(filePath, resetVersion) {
       return fs
         .readJson(filePath)
         .then((jsonFile) => {
           jsonFile.name = fmConfigData.name;
+          if (resetVersion) {
+            jsonFile.version = '0.0.1';
+          }
           return fs.writeJson(filePath, jsonFile);
         })
         .catch(console.error);
@@ -281,7 +278,7 @@ function deploy(sandbox) {
               cfm_user = answers.username;
               return axios({
                 method: 'post',
-                url: 'https://be-cfmpre.forcemanager.net/api/authenticate/v1/login',
+                url: 'https://be-cfm.forcemanager.net/api/authenticate/v1/login',
                 data: { username: answers.username, password: answers.password },
                 timeout: 30000,
                 withCredentials: false,
@@ -418,7 +415,7 @@ function deploy(sandbox) {
           console.log('Implementation ', implementationId);
           axios({
             method: 'put',
-            url: 'https://be-cfmpre.forcemanager.net/api/config/v1/changeImplementation',
+            url: 'https://be-cfm.forcemanager.net/api/config/v1/changeImplementation',
             headers: { Authorization: `Bearer ${cfm_token}` },
             contentType: 'application/json',
             accept: '*/*',
