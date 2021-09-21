@@ -16,7 +16,7 @@ let userDataTemplate = {
   apellidos: 'Test',
   email: 'usertest',
   movil: '000000000',
-  idUsuario: 000,
+  idUsuario: 0,
   currencySymbol: '$',
   currencyId: 2,
   currencyISO: 'USD',
@@ -203,8 +203,8 @@ window.onload = function () {
     cfmLogin(username, password)
       .then(function (token) {
         if (window.PasswordCredential) {
-          var c = new PasswordCredential(e.target);
-          navigator.credentials.store(c);
+          // var c = new PasswordCredential(e.target);
+          // navigator.credentials.store(c);
         }
         context.cfmToken = token;
         return changeImplementation();

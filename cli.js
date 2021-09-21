@@ -12,7 +12,7 @@ const archiver = require('archiver');
 const axios = require('axios');
 const envfile = require('envfile');
 const download = require('download-git-repo');
-const package = require('./package.json');
+const packageJson = require('./package.json');
 
 console.log(
   '\x1b[33m',
@@ -38,7 +38,7 @@ if (args[0] === 'create') {
   console.log('\x1b[0m', 'FM Pre-build\n');
   setPublicUrl(true);
 } else if (args[0] === '-v') {
-  console.log('\x1b[0m', `Version: ${package.version}\n`);
+  console.log('\x1b[0m', `Version: ${packageJson.version}\n`);
 } else {
   console.log('\x1b[0m', 'No arguments found. Please use create, start or deploy.');
 }
@@ -72,7 +72,6 @@ function create() {
     entryType: 'all',
   };
   let name = args[1];
-  let convert = false;
 
   if (!name) {
     console.log(
@@ -465,8 +464,8 @@ function deploy(sandbox) {
         })
         .then((fileContent) => {
           try {
-            const package = JSON.parse(fileContent);
-            package.version && console.log(`Deployed version: ${package.version}\n`);
+            const packageJson = JSON.parse(fileContent);
+            packageJson.version && console.log(`Deployed version: ${packageJson.version}\n`);
           } catch (error) {}
         })
         .catch((err) => {
