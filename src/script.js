@@ -33,6 +33,7 @@ let userDataTemplate = {
   user: 'usertest',
   lengthSystem: 'metric',
 };
+let formTemplates;
 try {
   fmDevData = JSON.parse(fmDevData);
   devData = fmDevData[guid] || {};
@@ -112,7 +113,22 @@ window.onload = function () {
         devData.externalToken = res;
         return window.FmBridgeBackend.init();
       })
-      .then(() => window.FmBridgeBackend.setActions(actions))
+      .then(() => window.FmBridgeBackend.getFormTemplates())
+      .then((templates) => {
+        formTemplates = Object.keys(templates)
+          .filter((key) => templates[key].z_campoextra3 === -1)
+          .map((key) => ({
+            ...templates[key],
+          }));
+        if (formTemplates.length === 1) {
+          // Si solo hay una template, selecciono directamente
+          context['formTemplate'] = formTemplates[0];
+        } else {
+          // Sino, muestro selector
+          showTemplate();
+        }
+        return window.FmBridgeBackend.setActions(actions);
+      })
       .then(() => window.FmBridgeBackend.loadFragment(guid, 'http://localhost:{{port}}', domEl))
       .catch(console.warn);
   } else if (options && !context.cfmToken) {
@@ -263,10 +279,10 @@ function toggleConfig() {
   panel.classList.toggle('show');
 }
 
-var dialogId;
-var signatureId;
+let dialogId;
+let signatureId;
 
-var actions = {
+let actions = {
   finishActivity() {
     location.reload();
   },
@@ -374,4 +390,29 @@ function signature(res) {
     );
   }
   document.getElementById('signature').classList.remove('show');
+}
+
+function showTemplate() {
+  // Muestro selector
+  document.getElementById('form-template').classList.add('show');
+
+  // Añado opciones
+  let selector = document.getElementById('templates');
+  formTemplates.forEach((element) => {
+    let opt = document.createElement('option');
+    opt.value = element.id;
+    opt.text = element.description;
+    selector.add(opt, null);
+  });
+}
+
+function hideTemplate() {
+  document.getElementById('form-template').classList.remove('show');
+}
+
+function setTemplate() {
+  let templateSelectedID = document.getElementById('templates').value;
+  const templateSelected = formTemplates.filter((element) => element.id === +templateSelectedID);
+  context['formTemplate'] = templateSelected[0];
+  hideTemplate();
 }
