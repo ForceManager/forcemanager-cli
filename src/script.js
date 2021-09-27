@@ -76,7 +76,7 @@ window.onload = function () {
       options = context.entityType && context.entityType.id && context.entity && context.entity.id;
       break;
     case 'form':
-      document.getElementById('form').style.display = 'block';
+      //document.getElementById('form').style.display = 'block';
       document.getElementById('widget').outerHTML = '';
       document.getElementById('page').outerHTML = '';
       domEl = 'form-content';
@@ -88,6 +88,8 @@ window.onload = function () {
         isReadonly: false,
         idState: -1,
         endState: 0,
+        //TEST
+        //form: { formTemplate: { id: 1 } },
       };
       options = true;
       break;
@@ -115,18 +117,23 @@ window.onload = function () {
       })
       .then(() => window.FmBridgeBackend.getFormTemplates())
       .then((templates) => {
-        formTemplates = Object.keys(templates)
-          .filter((key) => templates[key].z_campoextra3 === -1)
-          .map((key) => ({
-            ...templates[key],
-          }));
-        if (formTemplates.length === 1) {
-          // Si solo hay una template, selecciono directamente
-          context['formTemplate'] = formTemplates[0];
-        } else {
-          // Sino, muestro selector
-          showTemplate();
+        if (context.type === 'form') {
+          formTemplates = Object.keys(templates)
+            .filter((key) => templates[key].z_campoextra3 === -1)
+            .map((key) => ({
+              ...templates[key],
+            }));
+          if (formTemplates.length < 1) {
+            // si no hay template (?)
+          } else if (formTemplates.length === 1) {
+            // si solo hay un template activo, lo selecciono directamente
+            context.form.formTemplate = formTemplates[0];
+          } else {
+            // si hay varios templates, muestro selector para escoger
+            showTemplate();
+          }
         }
+        //.then(() => {
         return window.FmBridgeBackend.setActions(actions);
       })
       .then(() => window.FmBridgeBackend.loadFragment(guid, 'http://localhost:{{port}}', domEl))
@@ -393,9 +400,11 @@ function signature(res) {
 }
 
 function showTemplate() {
+  console.log('show template');
+  var test = document.getElementById('form-template');
   // Muestro selector
+  document.getElementById('form-template').classList.remove('hide');
   document.getElementById('form-template').classList.add('show');
-
   // Añado opciones
   let selector = document.getElementById('templates');
   formTemplates.forEach((element) => {
@@ -408,11 +417,12 @@ function showTemplate() {
 
 function hideTemplate() {
   document.getElementById('form-template').classList.remove('show');
+  domEl = 'form-content';
 }
-
+/** Función que se ejecuta al seleccionar una opción del selector */
 function setTemplate() {
   let templateSelectedID = document.getElementById('templates').value;
   const templateSelected = formTemplates.filter((element) => element.id === +templateSelectedID);
-  context['formTemplate'] = templateSelected[0];
+  context.form.formTemplate = templateSelected[0];
   hideTemplate();
 }

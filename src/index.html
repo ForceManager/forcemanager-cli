@@ -107,14 +107,14 @@
     <div class="form-header">
       <div id="form-title" class="form-title">Creación formulario</div>
     </div>
-    <div class="form-template" id="form-template">
+    <!-- <div class="form-template" id="form-template">
       <form id="template" method="post">
         <label class="form-template__label">Seleccionar form:</label>
         <select class="form-template__selector" name="templates" id="templates" form="form-template" onChange="setTemplate()">
           <option value='0'>Selecciona uno</option>
         </select>
       </form>
-    </div>
+    </div> -->
     <div id="form-camera-images" class="form-camera-images">
       <div class="form-camera-images-header">
         <div class="form-camera-images-header-title">IMÁGENES</div>
@@ -126,6 +126,14 @@
         </div>
         <div class="form-images"></div>
       </div>
+    </div>
+    <div class="form-template hide" id="form-template">
+      <form id="template" method="post">
+        <label class="form-template__label">Select form template:</label>
+        <select class="form-template__selector" name="templates" id="templates" form="form-template" onChange="setTemplate()">
+          <option hidden selected>Select...</option>
+        </select>
+      </form>
     </div>
     <div class="form-content" id="form-content"></div>
     <div id="loader" class="loader">
